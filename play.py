@@ -8,12 +8,14 @@ import pygame
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.angle = None
         self.image = pygame.image.load("Content/ship.png").convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (SHIP_SIZE, SHIP_SIZE))
         self.rect = self.image.get_rect(midbottom=(SHIP_POS[0], SHIP_POS[1]))
         self.last_shot_time = 0  # Store the last time a bullet was fired
         self.bullet_lvl = 1
         self.bull_type = 'a'
+        self.bull_types = ['a', 'b']
         self.damage = 0.5 + 0.5 * self.bullet_lvl
         self.mask = pygame.mask.from_surface(self.image)  # creates a mask for precise collisions
 
@@ -35,24 +37,43 @@ class Player(pygame.sprite.Sprite):
     def fire_bullets(self, bullets_g):
         bull_lv = min(self.bullet_lvl, 20)
         bullet_size = (10 + bull_lv, 20 + bull_lv * 2) if bull_lv > 3 else (10, 20)
-        spread = min(bull_lv, 5)  # Ensure bullet pattern follows the levels
+        if bull_lv == 1:
+            bullets_g.add(Bullet(self))
+        elif bull_lv == 2:
+            bullets_g.add(Bullet(self, offset=-bullet_size[0] / 2))
+            bullets_g.add(Bullet(self, offset=bullet_size[0] / 2))
+        elif bull_lv == 3:
+            bullets_g.add(Bullet(self, offset=-bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
+            bullets_g.add(Bullet(self))
+            bullets_g.add(Bullet(self, offset=bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+        elif bull_lv == 4:
+            bullets_g.add(Bullet(self, offset=-1.5 * bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
+            bullets_g.add(Bullet(self, offset=- bullet_size[0] / 2))
+            bullets_g.add(Bullet(self, offset=bullet_size[0] / 2))
+            bullets_g.add(Bullet(self, offset=1.5 * bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+        elif bull_lv >= 5:
+            bullets_g.add(Bullet(self, offset=-2 * bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
+            bullets_g.add(Bullet(self, offset=-bullet_size[0], push_back=bullet_size[1] / 4, angle=-self.angle / 2))
+            bullets_g.add(Bullet(self, offset=bullet_size[0], push_back=bullet_size[1] / 4, angle=self.angle / 2))
+            bullets_g.add(Bullet(self, offset=2 * bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+            bullets_g.add(Bullet(self))
 
-        offsets = [-bullet_size[0] * i for i in range(spread // 2, 0, -1)] + [0] + [bullet_size[0] * i for i in
-                                                                                    range(1, spread // 2 + 1)]
-        angles = [-self.angle * (i / (spread // 2)) for i in range(spread // 2, 0, -1)] + [0] + [
-            self.angle * (i / (spread // 2)) for i in range(1, spread // 2 + 1)]
-
-        for offset, angle in zip(offsets, angles):
-            push_back = bullet_size[1] / 2 if abs(angle) == self.angle else bullet_size[1] / 4 if angle else 0
-            bullets_g.add(Bullet(self, offset=offset, push_back=push_back, angle=angle))
-
-    def check_collisions(self, lvl_token_g, ):  # more efficient way to check for mask collisions
-        rect_collide_list = pygame.sprite.spritecollide(player.sprite, lvl_token_g, False)
-        if rect_collide_list:
-            for sprite in rect_collide_list:
-                if pygame.sprite.collide_mask(player.sprite, sprite):
-                    self.bullet_lvl += 1
-                    sprite.kill()
+    def check_collisions(self, *sprite_groups) -> None:  # more efficient way to check for collisions
+        for group in sprite_groups:
+            rect_collide_list = pygame.sprite.spritecollide(player.sprite, group, False)
+            if rect_collide_list:
+                for sprite in rect_collide_list:
+                    if pygame.sprite.collide_mask(player.sprite, sprite):
+                        if group == lvl_token_group:
+                            self.bullet_lvl += 1
+                            sprite.kill()
+                        elif group == gifts_group:
+                            sprite.kill()
+                            if self.bull_type == self.bull_types[sprite.type]:
+                                self.bullet_lvl += 1
+                            else:
+                                self.bull_type = self.bull_types[sprite.type]
+                                self.bullet_lvl = 1
 
     def update(self):
         if self.bull_type == 'b':
@@ -61,24 +82,24 @@ class Player(pygame.sprite.Sprite):
             self.angle = 0
         self.player_move()
         self.check_input(bullets_group)
-        self.check_collisions(lvl_token_group)
+        self.check_collisions(lvl_token_group, gifts_group)
 
 
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, player: Player, offset=0.0, angle=0.0, push_back=0.0):
+class Bullet(pygame.sprite.Sprite):  # todo: bullet damage
+    def __init__(self, player1: Player, offset=0.0, angle=0.0, push_back=0.0):
         super().__init__()
-        self.image = pygame.image.load(f"Content/bullet/{player.bull_type}1.png").convert_alpha()
+        self.image = pygame.image.load(f"Content/bullet/{player1.bull_type}1.png").convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (10, 20))
-        self.angle = angle
-        self.image = pygame.transform.rotate(self.image, -angle)
-        self.rect = self.image.get_rect(midbottom=(player.rect.centerx + offset, player.rect.top + push_back))
+        self.angle = angle if player1.bull_type == 'b' else 0
+        self.image = pygame.transform.rotate(self.image, -self.angle)
+        self.rect = self.image.get_rect(midbottom=(player1.rect.centerx + offset, player1.rect.top + push_back))
         self.speed = 8
         try:
             pygame.mixer.Sound("Content/Music/bullet/a.ogg").play()
         except pygame.error as e:
             print(f"Sound file error: {e}")
 
-    def update(self):
+    def update(self):  # moves and dies
         self.rect.x += self.speed * math.sin(math.radians(self.angle))
         self.rect.y -= self.speed * math.cos(math.radians(self.angle))
         if self.rect.bottom < 0:  # Remove if off-screen
@@ -86,15 +107,17 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Drops(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, animation_list):
         super().__init__()
-        self.frame_speed = None
-        self.frames = None
-        self.rect = None
-        self.gravity = None
-        self.frame_index = None
-        self.frames_count = None
-        self.image = None
+        self.gravity = 1.8
+        self.frames = animation_list
+        self.frames_count = len(self.frames)
+        self.frame_index = 0
+        self.frame_rate = 100
+        self.frame_speed = 0.2
+        self.image = self.frames[self.frame_index]
+        self.rect = self.image.get_rect(
+            midbottom=(randint(0, WIDTH - self.image.get_width()), 0))  # todo make it spawns in random x-axis
 
     def drops(self) -> None:
         self.rect.y += self.gravity
@@ -110,13 +133,7 @@ class Drops(pygame.sprite.Sprite):
 
 class LvlUpToken(Drops):
     def __init__(self):
-        super().__init__()
-        self.frames = lvl_up_animation_list
-        self.frame_index = 0
-        self.frame_rate = 100
-        self.image = lvl_up_animation_list[self.frame_index]
-        self.rect = self.image.get_rect(midbottom=(WIDTH / 2, 0))
-        self.frames_count = len(lvl_up_animation_list)
+        super().__init__(lvl_up_animation_list)
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self) -> None:
@@ -125,7 +142,16 @@ class LvlUpToken(Drops):
 
 
 class BulletChangeGift(Drops):  # todo
-    pass
+    def __init__(self):
+        self.type = randint(0, 1)
+        super().__init__(bullet_change_animation_lists[self.type])
+        self.frames = bullet_change_animation_lists[self.type]
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self) -> None:
+        self.drops()
+        self.animate()
+        screen.blit(self.mask.to_surface(), (self.rect.x, self.rect.y))
 
 
 class Enemies(pygame.sprite.Sprite):  # todo
@@ -138,6 +164,14 @@ class RedChicken(Enemies):  # todo
         super().__init__()
 
 
+def extract_frames(spritesheet, sheet_width, sheet_height, rows: int, cols: int) -> tuple:
+    sprite_width, sprite_height = sheet_width / cols, sheet_height / rows
+    return tuple(
+        spritesheet.subsurface(pygame.Rect(col * sprite_width, row * sprite_height, sprite_width, sprite_height))
+        for col in range(cols) for row in range(rows)
+    )
+
+
 WIDTH, HEIGHT = 910, 558  # Screen dimensions
 SHIP_SIZE = 50
 SHIP_POS = [WIDTH / 2, HEIGHT - 20]  # Starting position
@@ -147,10 +181,19 @@ pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chicken Invasion: Deluxe Edition")
+
 # loading up animations
 lvl_up_token_sheet = pygame.image.load("Content/bullet/give.png").convert_alpha()
-lvl_up_animation_list = tuple([lvl_up_token_sheet.subsurface(pygame.Rect(i * 44, 0, 44, 37)) for i in range(25)])
+lvl_up_animation_list = extract_frames(lvl_up_token_sheet, 1100, 37, 1, 25)
+bullet_change_animation_sheet_list = []
+bullet_change_animation_lists = []
+for index in range(2):
+    bullet_change_animation_sheet_list.append(
+        pygame.transform.smoothscale(pygame.image.load(f"Content/bullet/gift{index}_spritesheet.png").convert_alpha(),
+                                     (512, 306)))
+    bullet_change_animation_lists.append(extract_frames(bullet_change_animation_sheet_list[index], 512, 306, 5, 10))
 
+# overlay
 overlay = pygame.Surface((WIDTH, HEIGHT))
 overlay.fill((0, 0, 0))
 
@@ -166,9 +209,11 @@ clock = pygame.time.Clock()
 bk_ground = pygame.image.load("Content/background/background.png").convert()
 bk_ground_scaled = pygame.transform.smoothscale(bk_ground, (WIDTH, HEIGHT))
 
+# Groups
 player = pygame.sprite.GroupSingle(Player())
 bullets_group = pygame.sprite.Group()
 lvl_token_group = pygame.sprite.Group()
+gifts_group = pygame.sprite.Group()
 
 pause = False
 overlay_alpha = 0
@@ -187,7 +232,6 @@ while True:
 
     # Screen
     screen.blit(bk_ground_scaled, (0, 0))
-
     if pause:
         # Gradually increase overlay opacity for fade-in effect
 
@@ -200,15 +244,20 @@ while True:
         screen.blit(text_surface, text_rect)
     else:  # continue playing + anything we want to disappear upon pausing
         pygame.mouse.set_visible(False)
-        if randint(0, 20) == 19:
+        # spawns tokens and gifts randomly todo: make it depends on smth
+        if not randint(0, 180):
             lvl_token_group.add(LvlUpToken())
-        # lvl_token
+            gifts_group.add(BulletChangeGift())
+        # Gifts update
+        gifts_group.update()
+        gifts_group.draw(screen)
+        # lvl_token update
         lvl_token_group.update()
         lvl_token_group.draw(screen)
-        # Player
+        # Player update
         player.update()
         player.draw(screen)
-        # Bullets
+        # Bullets update
         bullets_group.update()
         bullets_group.draw(screen)
 
