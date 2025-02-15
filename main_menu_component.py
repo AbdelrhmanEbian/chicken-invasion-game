@@ -147,8 +147,8 @@ def settings_menu():
     sound_music_text = text_font.render('Sound Music', 1, 'white')
     sound_effect_text = text_font.render('Sound Effect', 1, 'white')
 
-    save_button = Button(300, 400, 100, 50, (0, 255, 0), (255, 255, 255), "Save")
-    back_button = Button(100, 400, 100, 50, (0, 255, 0), (255, 255, 255), "Back")
+    save_button = Button(300, 400, 100, 50, (0, 255, 0), (0, 0, 0), (255, 255, 255), "Save")
+    back_button = Button(100, 400, 100, 50, (0, 255, 0), (0, 0, 0), (255, 255, 255), "Back")
 
     buttons = pygame.sprite.Group([easy, normal, hard, save_button, back_button])
 
