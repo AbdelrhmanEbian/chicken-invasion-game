@@ -12,20 +12,17 @@ HEIGHT = 558
 text_font = pygame.font.SysFont('comicsans', 30, bold=True)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Chicken Invasion')
+bg_icon = pygame.image.load('Content/logo.png').convert()
+pygame.display.set_icon(bg_icon)
 fps = 60
 playing = True
 overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 overlay.set_alpha(100)
 overlay.fill((0, 0, 0))
-
-bg_icon = pygame.image.load('Content/logo.png').convert()
-bg_image = pygame.transform.scale(
-    pygame.image.load('Content/background/background.png').convert_alpha(),
-    (WIDTH, HEIGHT))
+bg_image = pygame.transform.scale(pygame.image.load('Content/background/background.png').convert_alpha(),(WIDTH, HEIGHT))
 bg_music = pygame.mixer.Sound('Content/Music/backgroundMap.ogg')
 bg_music.set_volume(0.2)
 quit_music = pygame.mixer.Sound('Content/Music/Quit.ogg')
-pygame.display.set_icon(bg_icon)
 
 
 def read_settings():
@@ -39,10 +36,9 @@ settings = read_settings()
 
 class Continue_game(Button):
     def render_text(self):
-        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.image.fill((0,0,0,0))
         if self.hover:
-            text_surface = self.font.render(self.text, True,
-                                            self.color if settings['continue'] == "True" else (70, 70, 70, 200))
+            text_surface = self.font.render(self.text, True, self.color if settings['continue'] == "True" else (70, 70, 70, 200))
             pygame.draw.rect(self.image, (20, 20, 20, 200), (0, 0, self.width + 50, self.height + 30), border_radius=20)
         else:
             text_surface = self.font.render(self.text, True,
