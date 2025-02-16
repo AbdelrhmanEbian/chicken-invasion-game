@@ -84,32 +84,26 @@ quit_button = Quit(WIDTH // 2, 400, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'Q
 button_group = pygame.sprite.Group()
 button_group.add(continue_button, new_game_button, setting_button, quit_button)
 
+clock = pygame.time.Clock()
+if bg_music.get_num_channels() == 0 and settings['sound music'] == "True":
+    bg_music.play(-1)
 
-def menu():
-    global playing
-    clock = pygame.time.Clock()
-    if bg_music.get_num_channels() == 0 and settings['sound music']:
-        bg_music.play(-1)
-
-    while playing:
-        clock.tick(fps)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if quit_button.rect.collidepoint(event.pos):
-                    bg_music.stop()
-                    quit_music.play()
-                    pygame.time.delay(500)
-                    quit_button.quit_game()
-                if setting_button.rect.collidepoint(event.pos):
-                    settings_menu(screen, text_font, bg_image)
-        screen.blit(bg_image, (0, 0))
-        screen.blit(overlay, (0, 0))
-        button_group.update()
-        button_group.draw(screen)
-        pygame.display.update()
-
-
-menu()
+while playing:
+    clock.tick(fps)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if quit_button.rect.collidepoint(event.pos):
+                bg_music.stop()
+                quit_music.play()
+                pygame.time.delay(500)
+                quit_button.quit_game()
+            if setting_button.rect.collidepoint(event.pos):
+                settings_menu(screen, text_font, bg_image, bg_music)
+    screen.blit(bg_image, (0, 0))
+    screen.blit(overlay, (0, 0))
+    button_group.update()
+    button_group.draw(screen)
+    pygame.display.update()

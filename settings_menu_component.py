@@ -80,15 +80,10 @@ class SaveButton(Button):
 
 
 class BackButton(Button):
-    """Button to return to main menu"""
-
-    @staticmethod
-    def back():
-        from main_menu_component import menu
-        menu()
+    pass
 
 
-def settings_menu(screen, text_font, bg_image):
+def settings_menu(screen, text_font, bg_image, bg_music):
     """Displays the settings menu using the shared screen and resources."""
     overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     overlay.set_alpha(100)
@@ -123,6 +118,10 @@ def settings_menu(screen, text_font, bg_image):
                             button.select()
                         elif isinstance(button, SaveButton):
                             button.save()
+                            if bg_music.get_num_channels() == 0 and settings['sound music'] == "True":
+                                bg_music.play(-1)
+                            elif settings['sound music'] == "False":
+                                bg_music.stop()
                         elif isinstance(button, BackButton):
                             return  # Exit settings
 
