@@ -151,7 +151,7 @@ class LvlUpToken(Drops):
         super().__init__(lvl_up_animation_list, lvl_up_animation_list[0])
 
 
-class BulletChangeGift(Drops):  # todo
+class BulletChangeGift(Drops):
     def __init__(self):
         self.type = randint(0, 1)
         super().__init__(bullet_change_animation_lists[self.type], bullet_change_animation_lists[self.type][0])

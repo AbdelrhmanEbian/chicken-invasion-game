@@ -1,5 +1,5 @@
 import pygame
-
+pygame.init()
 text_font = pygame.font.SysFont('comicsans', 30, bold=True)
 
 

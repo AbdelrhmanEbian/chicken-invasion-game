@@ -53,7 +53,8 @@ class DifficultyButton(Button):
 
     def render_text(self):
         self.image.fill((0, 0, 0, 0))
-        bg_color = (20, 20, 20, 200) if self.hover else (50, 50, 50, 200) if int(
+        bg_color = (20, 20, 20, 200) if self.hover and not int(
+            settings[self.key]) == self.level else (50, 50, 50, 200) if int(
             settings[self.key]) == self.level else (0, 0, 0, 100)
         pygame.draw.rect(self.image, bg_color, (0, 0, self.width, self.height), border_radius=20)
         text_surface = self.font.render(self.text, True, self.color)
@@ -100,8 +101,8 @@ def settings_menu(screen, text_font, bg_image):
     sound_music_button = OnOffButton(810, 100, 100, 50, (255, 255, 255), "ON", "sound music")
     sound_effect_button = OnOffButton(810, 200, 100, 50, (255, 255, 255), "ON", "sound effect")
 
-    save_button = SaveButton(300, 400, 100, 50, (0, 255, 0), (255, 255, 255), "Save")
-    back_button = BackButton(100, 400, 100, 50, (0, 255, 0), (255, 255, 255), "Back")
+    save_button = SaveButton(810, 400, 100, 50, (0, 255, 0), (255, 255, 255), "Save")
+    back_button = BackButton(460, 558 - 85, 150, 75, (0, 255, 0), (255, 255, 255), "Back")
 
     buttons = pygame.sprite.Group(
         [sound_music_button, sound_effect_button, easy, normal, hard, save_button, back_button])
@@ -148,5 +149,4 @@ if __name__ == "__main__":
         pygame.image.load("Content/background/background.png").convert_alpha(),
         (WIDTH, HEIGHT)
     )
-    while True:
-        settings_menu(screen, text_font, bg_image)
+    settings_menu(screen, text_font, bg_image)
