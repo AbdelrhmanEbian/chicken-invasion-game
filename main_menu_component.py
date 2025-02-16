@@ -1,15 +1,11 @@
 import csv
 from sys import exit
 
-import pygame
-
-from button import Button
+from button import *
 from settings_menu_component import settings_menu
 
-pygame.init()
 WIDTH = 910
 HEIGHT = 558
-text_font = pygame.font.SysFont('comicsans', 30, bold=True)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Chicken Invasion')
 fps = 60
@@ -101,7 +97,7 @@ while playing:
                 pygame.time.delay(500)
                 quit_button.quit_game()
             if setting_button.rect.collidepoint(event.pos):
-                settings_menu(screen, text_font, bg_image, bg_music)
+                settings_menu(screen, bg_image, bg_music)
     screen.blit(bg_image, (0, 0))
     screen.blit(overlay, (0, 0))
     button_group.update()

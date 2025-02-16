@@ -1,10 +1,6 @@
 import csv
 
-import pygame
-
-pygame.init()
-
-from button import Button
+from button import *
 
 
 def read_settings():
@@ -83,7 +79,7 @@ class BackButton(Button):
     pass
 
 
-def settings_menu(screen, text_font, bg_image, bg_music):
+def settings_menu(screen, bg_image, bg_music):
     """Displays the settings menu using the shared screen and resources."""
     overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     overlay.set_alpha(100)
@@ -142,10 +138,10 @@ if __name__ == "__main__":
     WIDTH, HEIGHT = 910, 558
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Test Settings Menu")
-
-    text_font = pygame.font.SysFont('comicsans', 30, bold=True)
+    bg_music = pygame.mixer.Sound('Content/Music/backgroundMap.ogg')
+    bg_music.set_volume(0.2)
     bg_image = pygame.transform.scale(
         pygame.image.load("Content/background/background.png").convert_alpha(),
         (WIDTH, HEIGHT)
     )
-    settings_menu(screen, text_font, bg_image)
+    settings_menu(screen, bg_image, bg_music)
