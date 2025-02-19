@@ -444,15 +444,23 @@ class ChickenGroup:  # check
         first_chicken = self.chicken_group.sprites()[0]
         if self.hidden == "right" and first_chicken.rect.center[0] > self.x and not self.drop:
             for chicken in self.chicken_group:
+                if isinstance(chicken, ChickenParachute):
+                    break
                 chicken.rect.x -= 2
         elif self.hidden == "left" and first_chicken.rect.center[0] < self.x and not self.drop:
             for chicken in self.chicken_group:
+                if isinstance(chicken, ChickenParachute):
+                    break
                 chicken.rect.x += 2
         elif self.hidden == "down" and first_chicken.rect.center[1] > self.y and not self.drop:
             for chicken in self.chicken_group:
+                if isinstance(chicken, ChickenParachute):
+                    break
                 chicken.rect.y -= 2
         elif self.hidden == "up" and first_chicken.rect.center[1] < self.y and not self.drop:
             for chicken in self.chicken_group:
+                if isinstance(chicken, ChickenParachute):
+                    break
                 chicken.rect.y += 2
         else:
             self.drop = True
