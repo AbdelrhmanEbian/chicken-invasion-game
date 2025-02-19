@@ -66,7 +66,9 @@ class SaveButton(Button):
     def save():
         with open("settings.json", "w") as file:
             return json.dump(settings, file)
-        print("Settings saved!")
+            print("Settings saved!")
+
+
 class BackButton(Button):
     pass
 

@@ -12,10 +12,11 @@ bg_icon = pygame.image.load('Content/logo.png').convert()
 pygame.display.set_icon(bg_icon)
 fps = 60
 playing = True
-overlay = pygame.Surface((WIDTH, HEIGHT))
-overlay.fill((0, 0, 0))
+overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 overlay.set_alpha(100)
-bg_image = pygame.transform.scale(pygame.image.load('Content/background/background.png').convert_alpha(),(WIDTH, HEIGHT))
+overlay.fill((0, 0, 0))
+bg_image = pygame.transform.scale(pygame.image.load('Content/background/background.png').convert_alpha(),
+                                  (WIDTH, HEIGHT))
 bg_music = pygame.mixer.Sound('Content/Music/backgroundMap.ogg')
 bg_music.set_volume(0.2)
 quit_music = pygame.mixer.Sound('Content/Music/Quit.ogg')
@@ -24,15 +25,17 @@ quit_music = pygame.mixer.Sound('Content/Music/Quit.ogg')
 def read_settings():
     with open("settings.json", "r") as file:
         return json.load(file)
-    
+
+
 settings = read_settings()
 
 
-class Continue_game(Button):
+class ContinueGame(Button):
     def render_text(self):
-        self.image.fill((0,0,0,0))
+        self.image.fill((0, 0, 0, 0))
         if self.hover:
-            text_surface = self.font.render(self.text, True, self.color if settings['continue'] == "True" else (70, 70, 70, 200))
+            text_surface = self.font.render(self.text, True,
+                                            self.color if settings['continue'] == "True" else (70, 70, 70, 200))
             pygame.draw.rect(self.image, (20, 20, 20, 200), (0, 0, self.width + 50, self.height + 30), border_radius=20)
         else:
             text_surface = self.font.render(self.text, True,
@@ -60,15 +63,14 @@ class Setting(Button):
     pass
 
 
-class New_game(Button):
+class NewGame(Button):
     @staticmethod
     def new_game():
-        # start new game
-        pass
+        import play
 
 
-continue_button = Continue_game(WIDTH // 2, 100, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'Continue')
-new_game_button = New_game(WIDTH // 2, 200, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'New game')
+continue_button = ContinueGame(WIDTH // 2, 100, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'Continue')
+new_game_button = NewGame(WIDTH // 2, 200, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'New game')
 setting_button = Setting(WIDTH // 2, 300, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'Settings')
 quit_button = Quit(WIDTH // 2, 400, 200, 60, (0, 0, 0, 100), (255, 255, 255), 'Quit')
 button_group = pygame.sprite.Group()
@@ -90,8 +92,10 @@ while playing:
                 quit_music.play()
                 pygame.time.delay(500)
                 quit_button.quit_game()
-            if setting_button.rect.collidepoint(event.pos):
+            elif setting_button.rect.collidepoint(event.pos):
                 settings_menu(screen, bg_image, bg_music)
+            elif new_game_button.rect.collidepoint(event.pos):
+                new_game_button.new_game()
     screen.blit(bg_image, (0, 0))
     screen.blit(overlay, (0, 0))
     button_group.update()
