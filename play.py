@@ -1,6 +1,7 @@
 import math
 import random
 import time  # Used for cooldown timers
+import time  # Used for cooldown timers
 
 import pygame
 
@@ -19,7 +20,7 @@ class Player(pygame.sprite.Sprite):
         self.bull_type = 'a'
         self.bull_types = ['a', 'b']
         self.damage = 1
-        self.mask = pygame.mask.from_surface(self.image)  # creates a mask for precise collisions
+        self.mask = pygame.mask.from_surface(self.image)  # Creates a mask for precise collisions
         self.health = 3
         self.invincible = False
         self.invincible_timer = 0
@@ -157,6 +158,15 @@ class Drops(pygame.sprite.Sprite):
             self.frames_count = len(self.frames)
             self.frame_index = 0
             self.frame_speed = 0.2
+        if image:
+            self.image = image
+        elif animation_list:
+            self.image = animation_list[0]
+        if animation_list:
+            self.frames = animation_list
+            self.frames_count = len(self.frames)
+            self.frame_index = 0
+            self.frame_speed = 0.2
         self.rect = self.image.get_rect(
             midbottom=(random.randint(0, WIDTH - self.image.get_width()), 0))
         self.mask = pygame.mask.from_surface(self.image)
@@ -204,8 +214,11 @@ class Egg(Drops):
             self.drops()
 
 
-# Chicken class
+# ChickenParachute class
 
+class ChickenParachute(Drops):
+    def __init__(self):
+        self.type = random.choice(["parachuted_red", "parachuted_blue"])
 class ChickenParachute(Drops):
     def __init__(self):
         self.type = random.choice(["parachuted_red", "parachuted_blue"])
@@ -214,6 +227,14 @@ class ChickenParachute(Drops):
             image = parachute_red
         elif self.type == "parachuted_blue":
             image = parachute_blue
+        super().__init__(image=image)
+        self.gravity = 1
+        self.health = 5
+
+    def check_collision(self):
+        no_of_bullets = len(pygame.sprite.spritecollide(self, bullets_group, True))
+        if no_of_bullets:
+            self.health -= no_of_bullets
         super().__init__(image=image)
         self.gravity = 1
         self.health = 5
@@ -368,7 +389,6 @@ def extract_frames(spritesheet, sheet_width: float, sheet_height: float, rows: i
     )
 
 
-# -------------------------------------------------------------------------------
 WIDTH, HEIGHT = 910, 558  # Screen dimensions
 SHIP_SIZE = 50
 SHIP_POS = [WIDTH / 2, HEIGHT - 20]  # Starting position
@@ -377,7 +397,7 @@ BULLET_COOLDOWN = 0.3  # Cooldown between shots
 pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Chicken Invasion: Deluxe Edition")
+pygame.display.set_caption("ChickenParachute Invasion: Deluxe Edition")
 
 # music load
 pygame.mixer.set_num_channels(20)
@@ -388,7 +408,9 @@ bullet_sound = pygame.mixer.Sound("Content/Music/bullet/a.ogg")
 egg_image = pygame.image.load("Content/Enemy/egg.png").convert_alpha()
 parachute_red = pygame.image.load("Content/Enemy/chickenParachuteRed.png").convert_alpha()
 parachute_red = pygame.transform.scale_by(parachute_red, 0.65)
+parachute_red = pygame.transform.scale_by(parachute_red, 0.65)
 parachute_blue = pygame.image.load("Content/Enemy/chickenParachuteBlue.png").convert_alpha()
+parachute_blue = pygame.transform.scale_by(parachute_blue, 0.65)
 parachute_blue = pygame.transform.scale_by(parachute_blue, 0.65)
 chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").convert_alpha()
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
@@ -433,6 +455,7 @@ bullets_group = pygame.sprite.Group()
 lvl_token_group = pygame.sprite.Group()
 gifts_group = pygame.sprite.Group()
 eggs_group = pygame.sprite.Group()
+chicken_parachute_group = pygame.sprite.Group()
 chicken_parachute_group = pygame.sprite.Group()
 bosses = pygame.sprite.Group()
 # ------------------------------------------------------------------------------
@@ -571,6 +594,7 @@ while True:
             lvl_token_group.add(LvlUpToken())
             gifts_group.add(BulletChangeGift())
             eggs_group.add(Egg())
+            chicken_parachute_group.add(ChickenParachute())
             chicken_parachute_group.add(ChickenParachute())
         # Gifts update
         gifts_group.update()
