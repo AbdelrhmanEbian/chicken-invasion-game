@@ -1,14 +1,10 @@
-import csv
-
+import json
 from button import *
 
 
 def read_settings():
-    with open("settings.csv", "r") as file:
-        reader = csv.DictReader(file)
-        return next(reader, {})  # Read first row or return empty dictionary
-
-
+    with open("settings.json", "r") as file:
+        return json.load(file)
 settings = read_settings()
 
 
@@ -68,13 +64,9 @@ class SaveButton(Button):
 
     @staticmethod
     def save():
-        with open("settings.csv", "w") as file:
-            writer = csv.writer(file)
-            writer.writerow(settings.keys())
-            writer.writerow(settings.values())
+        with open("settings.json", "w") as file:
+            return json.dump(settings, file)
         print("Settings saved!")
-
-
 class BackButton(Button):
     pass
 

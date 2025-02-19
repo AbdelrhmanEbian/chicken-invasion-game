@@ -1,4 +1,4 @@
-import csv
+import json
 from sys import exit
 
 from button import *
@@ -12,9 +12,9 @@ bg_icon = pygame.image.load('Content/logo.png').convert()
 pygame.display.set_icon(bg_icon)
 fps = 60
 playing = True
-overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-overlay.set_alpha(100)
+overlay = pygame.Surface((WIDTH, HEIGHT))
 overlay.fill((0, 0, 0))
+overlay.set_alpha(100)
 bg_image = pygame.transform.scale(pygame.image.load('Content/background/background.png').convert_alpha(),(WIDTH, HEIGHT))
 bg_music = pygame.mixer.Sound('Content/Music/backgroundMap.ogg')
 bg_music.set_volume(0.2)
@@ -22,11 +22,9 @@ quit_music = pygame.mixer.Sound('Content/Music/Quit.ogg')
 
 
 def read_settings():
-    with open("settings.csv", "r") as file:
-        reader = csv.DictReader(file)
-        return next(reader, {})  # Read first row or return empty dictionary
-
-
+    with open("settings.json", "r") as file:
+        return json.load(file)
+    
 settings = read_settings()
 
 
