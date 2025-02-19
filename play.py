@@ -17,10 +17,12 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midbottom=(SHIP_POS[0], SHIP_POS[1]))
         self.last_shot_time = 0  # Store the last time a bullet was fired
         self.bullet_lvl = 1
-        self.bull_type = 'a'
-        self.bull_types = ['a', 'b']
+        self.bull_type = "a"
+        self.bull_types = ["a", "b"]
         self.damage = 1
-        self.mask = pygame.mask.from_surface(self.image)  # Creates a mask for precise collisions
+        self.mask = pygame.mask.from_surface(
+            self.image
+        )  # Creates a mask for precise collisions
         self.health = 3
         # Invincibility arguments
         self.invincible = False
@@ -59,36 +61,98 @@ class Player(pygame.sprite.Sprite):
             bullets_g.add(Bullet(self, offset=-bullet_size[0] / 2))
             bullets_g.add(Bullet(self, offset=bullet_size[0] / 2))
         elif bull_lv == 3:
-            bullets_g.add(Bullet(self, offset=-bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=-bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=-self.angle,
+                )
+            )
             bullets_g.add(Bullet(self))
-            bullets_g.add(Bullet(self, offset=bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=self.angle,
+                )
+            )
         elif bull_lv == 4:
-            bullets_g.add(Bullet(self, offset=-1.5 * bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
-            bullets_g.add(Bullet(self, offset=- bullet_size[0] / 2))
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=-1.5 * bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=-self.angle,
+                )
+            )
+            bullets_g.add(Bullet(self, offset=-bullet_size[0] / 2))
             bullets_g.add(Bullet(self, offset=bullet_size[0] / 2))
-            bullets_g.add(Bullet(self, offset=1.5 * bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=1.5 * bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=self.angle,
+                )
+            )
         elif bull_lv >= 5:
-            bullets_g.add(Bullet(self, offset=-2 * bullet_size[0], push_back=bullet_size[1] / 2, angle=-self.angle))
-            bullets_g.add(Bullet(self, offset=-bullet_size[0], push_back=bullet_size[1] / 4, angle=-self.angle / 2))
-            bullets_g.add(Bullet(self, offset=bullet_size[0], push_back=bullet_size[1] / 4, angle=self.angle / 2))
-            bullets_g.add(Bullet(self, offset=2 * bullet_size[0], push_back=bullet_size[1] / 2, angle=self.angle))
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=-2 * bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=-self.angle,
+                )
+            )
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=-bullet_size[0],
+                    push_back=bullet_size[1] / 4,
+                    angle=-self.angle / 2,
+                )
+            )
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=bullet_size[0],
+                    push_back=bullet_size[1] / 4,
+                    angle=self.angle / 2,
+                )
+            )
+            bullets_g.add(
+                Bullet(
+                    self,
+                    offset=2 * bullet_size[0],
+                    push_back=bullet_size[1] / 2,
+                    angle=self.angle,
+                )
+            )
             bullets_g.add(Bullet(self))
         try:
             pygame.mixer.Sound("Content/Music/bullet/a.ogg").play()
         except pygame.error as e:
             print(f"Sound file error: {e}")
 
-    def check_collisions(self, *sprite_groups) -> None:  # more efficient way to check for collisions
+    def check_collisions(
+        self, *sprite_groups
+    ) -> None:  # more efficient way to check for collisions
         for group in sprite_groups:
             rect_collide_list = pygame.sprite.spritecollide(player.sprite, group, False)
             if rect_collide_list:
                 for sprite in rect_collide_list:
                     if pygame.sprite.collide_mask(player.sprite, sprite):
-                        if group == lvl_token_group:  # check for collision with lvl tokens
+                        if (
+                            group == lvl_token_group
+                        ):  # check for collision with lvl tokens
                             self.bullet_lvl += 1
                             sprite.kill()
                             try:
-                                pygame.mixer.Sound("Content/Music/bullet/levelUp.ogg").play()
+                                pygame.mixer.Sound(
+                                    "Content/Music/bullet/levelUp.ogg"
+                                ).play()
                             except pygame.error as e:
                                 print(f"Sound file error: {e}")
                         elif group == gifts_group:  # check for collision with gifts
@@ -96,29 +160,40 @@ class Player(pygame.sprite.Sprite):
                             if self.bull_type == self.bull_types[sprite.type]:
                                 self.bullet_lvl += 1
                                 try:
-                                    pygame.mixer.Sound("Content/Music/bullet/levelUp.ogg").play()
+                                    pygame.mixer.Sound(
+                                        "Content/Music/bullet/levelUp.ogg"
+                                    ).play()
                                 except pygame.error as e:
                                     print(f"Sound file error: {e}")
                             else:
                                 self.bull_type = self.bull_types[sprite.type]
                                 self.bullet_lvl = 1
                         elif not self.invincible:
-                            if group == eggs_group and not sprite.broken:  # check collision with the egg
+                            if (
+                                group == eggs_group and not sprite.broken
+                            ):  # check collision with the egg
                                 sprite.kill()
                                 self.take_damage()
-                            elif group == chicken_parachute_group or isinstance(sprite, Chicken):  # check
+                            elif group == chicken_parachute_group or isinstance(
+                                sprite, Chicken
+                            ):  # check
                                 self.take_damage()
                                 sprite.health -= 2
 
     def update(self):
-        if self.bull_type == 'b':
+        if self.bull_type == "b":
             self.angle = 20
         else:
             self.angle = 0
         self.player_move()
         self.check_input(bullets_group)
-        self.check_collisions(lvl_token_group, gifts_group, eggs_group, chicken_parachute_group,
-                              *[chicken.chicken_list for chicken in level.get_current_wave()])  # check
+        self.check_collisions(
+            lvl_token_group,
+            gifts_group,
+            eggs_group,
+            chicken_parachute_group,
+            *[chicken.chicken_group for chicken in level.get_current_wave()],
+        )  # check
         # Invincibility
         if self.invincible:
             elapsed_time = pygame.time.get_ticks() - self.invincible_timer
@@ -136,11 +211,15 @@ class Player(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, player1: Player, offset=0.0, angle=0.0, push_back=0.0) -> None:
         super().__init__()
-        self.image = pygame.image.load(f"Content/bullet/{player1.bull_type}1.png").convert_alpha()
+        self.image = pygame.image.load(
+            f"Content/bullet/{player1.bull_type}1.png"
+        ).convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (10, 20))
-        self.angle = angle if player1.bull_type == 'b' else 0
+        self.angle = angle if player1.bull_type == "b" else 0
         self.image = pygame.transform.rotate(self.image, -self.angle)
-        self.rect = self.image.get_rect(midbottom=(player1.rect.centerx + offset, player1.rect.top + push_back))
+        self.rect = self.image.get_rect(
+            midbottom=(player1.rect.centerx + offset, player1.rect.top + push_back)
+        )
         self.speed = 8
         self.damage = 1  # Set damage based on level
 
@@ -165,7 +244,8 @@ class Drops(pygame.sprite.Sprite):
             self.frame_index = 0
             self.frame_speed = 0.2
         self.rect = self.image.get_rect(
-            midbottom=(random.randint(0, WIDTH - self.image.get_width()), 0))
+            midbottom=(random.randint(0, WIDTH - self.image.get_width()), -100)
+        )
         self.mask = pygame.mask.from_surface(self.image)
 
     def drops(self) -> None:
@@ -215,6 +295,7 @@ class Egg(Drops):
 
 # ChickenParachute class
 
+
 class ChickenParachute(Drops):
     def __init__(self):
         self.type = random.choice(["parachuted_red", "parachuted_blue"])
@@ -232,13 +313,14 @@ class ChickenParachute(Drops):
         if no_of_bullets:
             self.health -= no_of_bullets  # todo: make it depend on lvl of bullets
 
-    def update(self) -> None:  # todo
+    def update(self , drop ) -> None:  # todo # it receive drop as a parameter to make them have ability to drop eggs
         self.drops()
         self.check_collision()
-        if random.randint(0, 200) == 155:
-            pos = self.rect.midbottom
-            eggs_group.add(Egg(pos))
-            egg_lay_sound.play()
+        if drop:
+            if random.randint(0, 200) == 155:
+                pos = self.rect.midbottom
+                eggs_group.add(Egg(pos))
+                egg_lay_sound.play()
         if self.health <= 0:
             self.kill()
             random.choice(chicken_die_sounds).play()
@@ -259,7 +341,10 @@ class Chicken(Drops):  # check
             self.health -= no_of_bullets
 
     def animate(self) -> None:
-        if math.ceil(self.frame_index) >= self.frames_count or math.floor(self.frame_index) < 0:
+        if (
+            math.ceil(self.frame_index) >= self.frames_count
+            or math.floor(self.frame_index) < 0
+        ):
             self.frame_speed *= -1
         self.frame_index += self.frame_speed
         self.image = self.frames[int(self.frame_index)]
@@ -275,17 +360,31 @@ class Chicken(Drops):  # check
 
 
 class ChickenGroup:  # check
-    def __init__(self, x, y, chicken_type, number_of_chickens, chicken_per_row, transform_x, transform_y, group_order):
-        self.chicken_list = pygame.sprite.Group()
-        self.drop = False
+    def __init__(
+        self,
+        x,
+        y,
+        chicken_type,
+        number_of_chickens,
+        number_of_parachute_chickens,
+        chicken_per_row,
+        initial_x,
+        initial_y,
+        group_order,
+        hidden,
+    ):
+        self.chicken_group = pygame.sprite.Group()
+        self.drop = False # if true make chickens of group have chance drop the eggs
         self.x = x
         self.y = y
         self.group_order = group_order
-        self.hidden = 'right' if transform_x > 0 else 'left' if not transform_x == 0 else 'down' if transform_y > 0 else 'up'
-        self.transform_x = transform_x
-        self.transform_y = transform_y
+        self.hidden = hidden
+        self.initial_x = initial_x
+        self.initial_y = initial_y
         self.number_of_chickens = number_of_chickens
         self.chicken_per_row = chicken_per_row
+        self.number_of_parachute_chickens = number_of_parachute_chickens
+        self.number_of_parachute_chickens_generated = 0
         if chicken_type == "red chicken":
             self.animation_list = chicken_red_animation_list
         elif chicken_type == "green chicken":
@@ -295,20 +394,28 @@ class ChickenGroup:  # check
         self.generate_chicken_group()
 
     def generate_chicken_group(self):
-        relative_height = self.transform_y + self.y if not self.hidden == 'down' else self.transform_y
-        chicken_order_in_row = 1
+        relative_height = self.initial_y
+        chicken_order_in_row = 0
         for _ in range(self.number_of_chickens):
             if chicken_order_in_row == self.chicken_per_row + 1:
                 chicken_order_in_row = 1
-                relative_height += (chicken.image.get_height()) + 10
-            relative_distance = (
-                    self.transform_x + self.x + (chicken_order_in_row * 60)) if not self.hidden == 'right' else (
-                    self.transform_x - (chicken_order_in_row * 60))
-            chicken = Chicken(image=None, animation_list=self.animation_list, x=relative_distance, y=relative_height,
-                              group_order=self.group_order)
-            self.chicken_list.add(chicken)
+                relative_height += (chicken.image.get_height() / 2) + 10
+            relative_distance = self.initial_x + (chicken_order_in_row * 60)
+            chicken = Chicken(
+                image=None,
+                animation_list=self.animation_list,
+                x=relative_distance,
+                y=relative_height,
+                group_order=self.group_order,
+            )
+            self.chicken_group.add(chicken)
             chicken_order_in_row += 1
-
+    def generating_parachute_chicken(self):
+        if self.number_of_parachute_chickens and self.number_of_parachute_chickens > self.number_of_parachute_chickens_generated:
+            if not random.randint(0,180) :
+                parachute_chicken = ChickenParachute()
+                self.chicken_group.add(parachute_chicken)
+                self.number_of_parachute_chickens_generated += 1
     def move_randomly(self):  # move all chickens randomly (inaccurate till now)
         speed = 3
         move_in_x = speed * math.cos(self.angle)
@@ -319,7 +426,7 @@ class ChickenGroup:  # check
         # elif self.rect.top + move_in_y <= 30 or self.rect.bottom + move_in_y >= HEIGHT - 30:
         #     self.angle = -self.angle  # Reverse Y direction
         #     move_in_y = speed * math.sin(self.angle)
-        for chicken in self.chicken_list:
+        for chicken in self.chicken_group:
             chicken.rect.x += int(move_in_x)
             chicken.rect.y += int(move_in_y)
         self.rect.x += int(move_in_x)
@@ -330,30 +437,30 @@ class ChickenGroup:  # check
 
     def update(self, move):  # check move param
         # self.move_randomly()
-        if len(self.chicken_list) == 0:
+        if len(self.chicken_group) == 0:
             level.current_wave.groups.remove(self)
             del self
             return
-        first_chicken = self.chicken_list.sprites()[0 if not self.hidden == 'right' else -1]
-        if self.hidden == 'right' and first_chicken.rect.x > self.x and not self.drop:
-            for chicken in self.chicken_list:
+        first_chicken = self.chicken_group.sprites()[0]
+        if self.hidden == "right" and first_chicken.rect.center[0] > self.x and not self.drop:
+            for chicken in self.chicken_group:
                 chicken.rect.x -= 2
-        elif self.hidden == 'left' and first_chicken.rect.x < self.x and not self.drop:
-            for chicken in self.chicken_list:
+        elif self.hidden == "left" and first_chicken.rect.center[0] < self.x and not self.drop:
+            for chicken in self.chicken_group:
                 chicken.rect.x += 2
-        elif self.hidden == 'down' and first_chicken.rect.y > self.y and not self.drop:
-            for chicken in self.chicken_list:
+        elif self.hidden == "down" and first_chicken.rect.center[1] > self.y and not self.drop:
+            for chicken in self.chicken_group:
                 chicken.rect.y -= 2
-
-        elif self.hidden == 'up' and first_chicken.rect.y < self.y and not self.drop:
-            for chicken in self.chicken_list:
+        elif self.hidden == "up" and first_chicken.rect.center[1] < self.y and not self.drop:
+            for chicken in self.chicken_group:
                 chicken.rect.y += 2
         else:
             self.drop = True
         # if move:
         # self.move_randomly() #check
-        self.chicken_list.update(self.drop)
-        self.chicken_list.draw(screen)
+        self.generating_parachute_chicken()
+        self.chicken_group.update(self.drop)
+        self.chicken_group.draw(screen)
 
 
 # Boss class
@@ -382,11 +489,18 @@ class Boss(Drops):
             Egg.add(egg)
 
 
-def extract_frames(spritesheet, sheet_width: float, sheet_height: float, rows: int, cols: int) -> tuple:
+def extract_frames(
+    spritesheet, sheet_width: float, sheet_height: float, rows: int, cols: int
+) -> tuple:
     sprite_width, sprite_height = sheet_width / cols, sheet_height / rows
     return tuple(
-        spritesheet.subsurface(pygame.Rect(col * sprite_width, row * sprite_height, sprite_width, sprite_height))
-        for col in range(cols) for row in range(rows)
+        spritesheet.subsurface(
+            pygame.Rect(
+                col * sprite_width, row * sprite_height, sprite_width, sprite_height
+            )
+        )
+        for col in range(cols)
+        for row in range(rows)
     )
 
 
@@ -404,15 +518,26 @@ pygame.display.set_caption("ChickenParachute Invasion: Deluxe Edition")
 # music load
 pygame.mixer.set_num_channels(20)
 egg_lay_sound = pygame.mixer.Sound("Content/Music/chicken/Chicken_lay.ogg")
-chicken_die_sounds = list([pygame.mixer.Sound(f"Content/Music/chicken/Chicken_death{i}.ogg") for i in range(1, 5)])
+chicken_die_sounds = list(
+    [
+        pygame.mixer.Sound(f"Content/Music/chicken/Chicken_death{i}.ogg")
+        for i in range(1, 5)
+    ]
+)
 bullet_sound = pygame.mixer.Sound("Content/Music/bullet/a.ogg")
 # -------------------------------------------------------------------------------
 egg_image = pygame.image.load("Content/Enemy/egg.png").convert_alpha()
-parachute_red = pygame.image.load("Content/Enemy/chickenParachuteRed.png").convert_alpha()
+parachute_red = pygame.image.load(
+    "Content/Enemy/chickenParachuteRed.png"
+).convert_alpha()
 parachute_red = pygame.transform.scale_by(parachute_red, 0.65)
-parachute_blue = pygame.image.load("Content/Enemy/chickenParachuteBlue.png").convert_alpha()
+parachute_blue = pygame.image.load(
+    "Content/Enemy/chickenParachuteBlue.png"
+).convert_alpha()
 parachute_blue = pygame.transform.scale_by(parachute_blue, 0.65)
-chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").convert_alpha()
+chicken_green_sheet = pygame.image.load(
+    "Content/Enemy/chickenGreen.png"
+).convert_alpha()
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
 chicken_boss_sheet = pygame.image.load("Content/Enemy/boss.png").convert_alpha()
 chicken_bossRed_sheet = pygame.image.load("Content/Enemy/bossRed.png").convert_alpha()
@@ -424,13 +549,22 @@ lvl_up_token_sheet = pygame.image.load("Content/bullet/give.png").convert_alpha(
 lvl_up_animation_list = extract_frames(lvl_up_token_sheet, 1100, 37, 1, 25)
 gifts_animation_sheet_list = []
 bullet_change_animation_lists = []
-egg_break_animation_sheet = pygame.image.load("Content/Enemy/eggBreak.png").convert_alpha()
+egg_break_animation_sheet = pygame.image.load(
+    "Content/Enemy/eggBreak.png"
+).convert_alpha()
 eqq_break_animation_list = extract_frames(egg_break_animation_sheet, 224, 24, 1, 8)
 for index in range(2):
     gifts_animation_sheet_list.append(
-        pygame.transform.smoothscale(pygame.image.load(f"Content/bullet/gift{index}_spritesheet.png").convert_alpha(),
-                                     (512, 306)))
-    bullet_change_animation_lists.append(extract_frames(gifts_animation_sheet_list[index], 512, 306, 5, 10))
+        pygame.transform.smoothscale(
+            pygame.image.load(
+                f"Content/bullet/gift{index}_spritesheet.png"
+            ).convert_alpha(),
+            (512, 306),
+        )
+    )
+    bullet_change_animation_lists.append(
+        extract_frames(gifts_animation_sheet_list[index], 512, 306, 5, 10)
+    )
 
 # overlay
 overlay = pygame.Surface((WIDTH, HEIGHT))
@@ -472,34 +606,50 @@ class Wave(pygame.sprite.Sprite):
         self.current_wave_number = wave
         self.read_wave_data()
         self.wave_ended = False
-        self.total_chickens = sum([group["number of chicken"] for group in self.data['waves']])
-        self.number_of_groups = len(self.data['waves'])
-        self.waves = self.data['waves']
+        self.total_chickens = sum(
+            [group["number of chicken"] for group in self.data["waves"]]
+        )
+        self.number_of_groups = len(self.data["waves"])
+        self.waves = self.data["waves"]
         self.groups = []
         self.data = {}
         self.generate_groups()
 
     def read_wave_data(self):
-        with open(f'levels_data/level_{self.current_level}_data/waves/wave_{self.current_wave_number}_data.json',
-                  'r') as file:
+        with open(
+            f"levels_data/level_{self.current_level}_data/waves/wave_{self.current_wave_number}_data.json",
+            "r",
+        ) as file:
             data = json.load(file)
             self.data = data
 
     def generate_groups(self):
         chicken_wave = [
-            ChickenGroup(x=group["position x"], y=group['position y'], chicken_type=group["type"],
-                         number_of_chickens=group["number of chicken"],
-                         chicken_per_row=group["number of chicken per row"], transform_x=group["transform x"],
-                         transform_y=group['transform y'], group_order=index) for
-            index, group in enumerate(self.waves)]
+            ChickenGroup(
+                x=group["final x"],
+                y=group["final y"],
+                chicken_type=group["type"],
+                number_of_chickens=group["number of chicken"],
+                chicken_per_row=group["number of chicken per row"],
+                initial_x=group["initial x"],
+                initial_y=group["initial y"],
+                group_order=index,
+                hidden=group["hidden"],
+                number_of_parachute_chickens=group["number of parachute chickens"],
+            )
+            for index, group in enumerate(self.waves)
+        ]
         self.groups = chicken_wave
 
     def get_groups(self):
         return self.groups
 
     def draw_level_and_wave(self):
-        text = font.render(f"you have finished level {self.current_level} wave {self.current_wave_number}", True,
-                           (255, 255, 255))
+        text = font.render(
+            f"you have finished level {self.current_level} wave {self.current_wave_number}",
+            True,
+            (255, 255, 255),
+        )
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(text, text_rect)
 
@@ -524,15 +674,17 @@ class Level:
         self.current_wave = current_wave
         self.level_ended = False
         self.read_level_data()
-        self.chicken_per_wave = self.data['number of chickens in each wave']
-        self.number_of_waves = self.data['number of waves']
+        self.chicken_per_wave = self.data["number of chickens in each wave"]
+        self.number_of_waves = self.data["number of waves"]
 
     def generate_wave(self):
         wave = Wave(self.current_level, self.current_wave_number)
         return wave
 
     def read_level_data(self):
-        with open(f'levels_data/level_{self.current_level}_data/level_data.json', 'r') as file:
+        with open(
+            f"levels_data/level_{self.current_level}_data/level_data.json", "r"
+        ) as file:
             data = json.load(file)
             self.data = data
 
@@ -541,10 +693,16 @@ class Level:
 
     def update(self):
         if self.current_wave.wave_ended:
-            if not hasattr(self, 'wave_end_time'):  # Check if wave_end_time is not already set
-                self.wave_end_time = pygame.time.get_ticks()  # Record the time when the wave ended
-                if not hasattr(self, 'music_played'):  # Check if music has already been played
-                    self.music = pygame.mixer.Sound('Content/Music/Gamewin.ogg')
+            if not hasattr(
+                self, "wave_end_time"
+            ):  # Check if wave_end_time is not already set
+                self.wave_end_time = (
+                    pygame.time.get_ticks()
+                )  # Record the time when the wave ended
+                if not hasattr(
+                    self, "music_played"
+                ):  # Check if music has already been played
+                    self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
                     self.music.play()
                     self.music_played = True  # Mark music as played
 
@@ -577,7 +735,7 @@ class Level:
 start_up_level = 1
 start_up_wave = 1
 level = Level(start_up_level, start_up_wave)
-winner_music = pygame.mixer.Sound('Content/Music/Gamewin.ogg')
+winner_music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
 
 while True:
     for event in pygame.event.get():
@@ -634,13 +792,13 @@ while True:
         eggs_group.update()
         eggs_group.draw(screen)
         # chicken parachute update
-        chicken_parachute_group.update()
-        chicken_parachute_group.draw(screen)
+        # it does not need to be updated as each group have its own parachute chickens
+        # chicken_parachute_group.update()
+        # chicken_parachute_group.draw(screen)
         # Player update
         player.update()
         player.draw(screen)
-        # group.update() #check
-        # group.draw(screen)
+        # update level class -> update current wave -> update each group in current wave -> update all chickens in each group
         level.update()
 
     clock.tick(60)
