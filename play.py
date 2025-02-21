@@ -7,6 +7,12 @@ import pygame
 
 END = False
 
+def read_settings():
+    with open("settings.json", "r") as file:
+        data = json.load(file)
+        return ( data['sound  effects'],  data['sound music'])
+SOUND_EFFECT = read_settings()[0]
+SOUND_MUSIC = read_settings()[1]
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -45,7 +51,6 @@ class Player(pygame.sprite.Sprite):
         print(f"Player hit! Health: {self.health}")
         # if self.health <= 0: # todo don't forget to un comment after debugging
         #     self.kill()
-
     def check_input(self, bullets_g):
         current_time = time.time()  # Get current time in seconds
         if pygame.mouse.get_pressed()[0]:  # Left mouse button
@@ -133,7 +138,8 @@ class Player(pygame.sprite.Sprite):
             )
             bullets_g.add(Bullet(self))
         try:
-            bullet_sound.play()
+            if SOUND_EFFECT:
+                bullet_sound.play()
         except pygame.error as e:
             print(f"Sound file error: {e}")
 
@@ -147,7 +153,8 @@ class Player(pygame.sprite.Sprite):
                             self.bullet_lvl += 1
                             sprite.kill()
                             try:
-                                lvl_up_sound.play()
+                                if SOUND_EFFECT:
+                                    lvl_up_sound.play()
                             except pygame.error as e:
                                 print(f"Sound file error: {e}")
                         elif group == gifts_group:  # check for collision with gifts
@@ -155,7 +162,8 @@ class Player(pygame.sprite.Sprite):
                             if self.bull_type == self.bull_types[sprite.type]:
                                 self.bullet_lvl += 1
                                 try:
-                                    lvl_up_sound.play()
+                                    if SOUND_EFFECT:
+                                        lvl_up_sound.play()
                                 except pygame.error as e:
                                     print(f"Sound file error: {e}")
                             else:
@@ -343,8 +351,8 @@ class Chicken(Drops):  # check
                     meat_group.add(Meat(0, self.rect.midbottom))
                 elif meat_drop_random_number in range(51, 76):
                     meat_group.add(Meat(1, self.rect.midbottom))
-
-                random.choice(chicken_die_sounds).play()
+                if SOUND_EFFECT:
+                    random.choice(chicken_die_sounds).play()
             else:
                 self.health -= bullet.damage
                 bullet.kill()
@@ -385,8 +393,8 @@ class ChickenParachute(Drops):
                     meat_group.add(Meat(0, self.rect.midbottom))
                 elif meat_drop_random_number in range(51, 76):
                     meat_group.add(Meat(1, self.rect.midbottom))
-
-                random.choice(chicken_die_sounds).play()
+                if SOUND_EFFECT:
+                    random.choice(chicken_die_sounds).play()
             else:
                 self.health -= bullet.damage
                 bullet.kill()
@@ -398,7 +406,8 @@ class ChickenParachute(Drops):
             if random.randint(0, 200) == 155:
                 pos = self.rect.midbottom
                 eggs_group.add(Egg(pos))
-                egg_lay_sound.play()
+                if SOUND_EFFECT:
+                    egg_lay_sound.play()
 
 
 class ChickenGroup:  # check
@@ -525,10 +534,11 @@ class Boss(Drops):
         self.type = type
         if self.type == "boss":
             super().__init__(animation_list=chicken_boss_animation_list)
-            self.health = 300
+            self.health = 20
         elif self.type == "boss_red":
             super().__init__(animation_list=chicken_bossRed_animation_list)
-            self.health = 200
+            self.health = 15
+        self.rect = self.image.get_rect(center=(x, y))
         self.last_move_time = pygame.time.get_ticks()
         self.move_interval = 3000  # Move for 1
         self.ability_to_move = False
@@ -544,7 +554,8 @@ class Boss(Drops):
         for bullet in collisions_with_bullets:
             if self.health <= 0:  # if dead
                 self.kill()
-                random.choice(chicken_die_sounds).play()
+                if SOUND_EFFECT:
+                    random.choice(chicken_die_sounds).play()
             else:
                 self.health -= bullet.damage
                 bullet.kill()
@@ -553,7 +564,17 @@ class Boss(Drops):
         self.check_collision()
         if self.health <= 0:
             self.kill()
-            random.choice(chicken_die_sounds).play()
+            distance = self.rect.width // 2
+            for i in range(3):
+                pos_x = self.rect.left + (i * distance) + 5
+                pos_y = self.rect.bottom
+                meat_drop_random_number = random.randint(0, 100)  # spawn meat
+                if meat_drop_random_number <= 50:
+                    meat_group.add(Meat(0, (pos_x,pos_y)))
+                elif meat_drop_random_number in range(51, 76):
+                    meat_group.add(Meat(1, (pos_x,pos_y)))
+            if SOUND_EFFECT:
+                random.choice(chicken_die_sounds).play()
         current_time = pygame.time.get_ticks()
         if self.last_move_time + self.move_interval <= current_time and not self.ability_to_move:
             self.ability_to_move = True
@@ -836,8 +857,9 @@ class Level:
                         self, "music_played"
                 ):  # Check if music has already been played
                     self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
-                    self.music.play()
-                    self.music_played = True  # Mark music as played
+                    if SOUND_MUSIC:
+                        self.music.play()
+                        self.music_played = True  # Mark music as played
 
             # Calculate the time elapsed since the wave ended
             elapsed_time = pygame.time.get_ticks() - self.wave_end_time
@@ -895,8 +917,9 @@ while True:
         text = font.render("Winner", True, (255, 255, 255))
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(text, text_rect)
-        if winner_music.get_num_channels() == 0:
-            winner_music.play()  # Play the music
+        if SOUND_MUSIC:
+            if winner_music.get_num_channels() == 0:
+                winner_music.play()  # Play the music
         pygame.display.update()
     elif not END:  # continue playing + anything we want to disappear upon pausing
         pygame.mouse.set_visible(False)
