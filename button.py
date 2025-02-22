@@ -22,7 +22,7 @@ class Button(pygame.sprite.Sprite):
         self.image.fill((0, 0, 0, 0))  # Clear previous surface
 
         # Background color changes on hover
-        bg_color = (20, 20, 20, 200) if self.hover else (0, 0, 0, 200)
+        bg_color = (20, 20, 20, 200) if self.hover else self.bg_color
         pygame.draw.rect(self.image, bg_color, (0, 0, self.width, self.height), border_radius=20)
 
         # Render text
@@ -38,3 +38,5 @@ class Button(pygame.sprite.Sprite):
         # Only re-render if hover state changes
         if self.hover != prev_hover:
             self.render_text()
+
+

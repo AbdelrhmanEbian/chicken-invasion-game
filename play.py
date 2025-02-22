@@ -2,29 +2,23 @@ import json
 import math
 import random
 import time  # Used for cooldown timers
-
-import pygame
-
+from button import *
 END = False
-
 def read_settings():
     with open("settings.json", "r") as file:
-        data = json.load(file)
-        return ( data['sound  effects'],  data['sound music'])
-SOUND_EFFECT = read_settings()[0]
-SOUND_MUSIC = read_settings()[1]
+        return json.load(file)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self , bullet_level = 1, bullet_type = 'a' , score = 0):
         super().__init__()
         self.angle = None
-        self.score = 0
+        self.score = score
         self.image = pygame.image.load("Content/ship.png").convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (SHIP_SIZE, SHIP_SIZE))
         self.rect = self.image.get_rect(midbottom=(SHIP_POS[0], SHIP_POS[1]))
         self.last_shot_time = 0  # Store the last time a bullet was fired
-        self.bullet_lvl = 1
-        self.bull_type = "a"
+        self.bullet_lvl = bullet_level
+        self.bull_type = bullet_type
         self.bull_types = ["a", "b"]
         self.damage = 1
         self.mask = pygame.mask.from_surface(self.image)  # Creates a mask for precise collisions
@@ -328,9 +322,7 @@ class Meat(Drops):
     def update(self) -> None:
         self.drops()
 
-
 # Chicken classes
-
 
 class Chicken(Drops):  # check
     def __init__(self, image, animation_list=None, x=None, y=None, group_order=None):
@@ -636,10 +628,13 @@ class BossGroup():
         self.chicken_group.draw(screen)
 
 
-def extract_frames(spritesheet, rows: int, cols: int) -> tuple:
+def extract_frames(spritesheet, rows: int, cols: int , scale : tuple = ()) -> tuple:
     sprite_width, sprite_height = spritesheet.get_width() / cols, spritesheet.get_height() / rows
+    # adding scale perimeter to enlarge image if needed by ternary condition
     return tuple(
-        spritesheet.subsurface(pygame.Rect(col * sprite_width, row * sprite_height, sprite_width, sprite_height))
+        pygame.transform.scale(spritesheet.subsurface(pygame.Rect(col * sprite_width, row * sprite_height, sprite_width, sprite_height)) , scale) 
+        if not len(scale) == 0 else 
+        (spritesheet.subsurface(pygame.Rect(col * sprite_width, row * sprite_height, sprite_width, sprite_height)))
         for col in range(cols) for row in range(rows)
     )
 
@@ -650,12 +645,11 @@ WIDTH, HEIGHT = 910, 558  # Screen dimensions
 SHIP_SIZE = 50
 SHIP_POS = [WIDTH / 2, HEIGHT - 20]  # Starting position
 BULLET_COOLDOWN = 0.3  # Cooldown between shots
-
-pygame.init()
-
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("ChickenParachute Invasion: Deluxe Edition")
+pygame.display.set_caption("Chicken Invasion")
 score_font = pygame.font.Font("Content/7segment.ttf", 40)
+bg_icon = pygame.image.load('Content/logo.png').convert()
+pygame.display.set_icon(bg_icon)
 
 # music load
 # -------------------------------------------------------------------------------
@@ -684,9 +678,9 @@ chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").conver
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
 
 chicken_boss_sheet = pygame.image.load("Content/Enemy/boss.png").convert_alpha()
-chicken_boss_animation_list = extract_frames(chicken_boss_sheet, 1, 10)
+chicken_boss_animation_list = extract_frames(chicken_boss_sheet, 1, 10 , (150,150))
 chicken_bossRed_sheet = pygame.image.load("Content/Enemy/bossRed.png").convert_alpha()
-chicken_bossRed_animation_list = extract_frames(chicken_bossRed_sheet, 1, 10)
+chicken_bossRed_animation_list = extract_frames(chicken_bossRed_sheet, 1, 10 , (150,150))
 
 chicken_green_animation_list = extract_frames(chicken_green_sheet, 1, 10)
 chicken_red_animation_list = extract_frames(chicken_red_sheet, 1, 10)
@@ -721,8 +715,7 @@ font = pygame.font.Font(None, 50)
 angle_event = pygame.USEREVENT + 1  # check
 pygame.time.set_timer(angle_event, 2000)  # check
 # Create text surface
-text_surface = font.render("Press 'P' to continue", True, (255, 255, 255))
-text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
 
 clock = pygame.time.Clock()
 bk_ground = pygame.image.load("Content/background/background.png").convert()
@@ -731,7 +724,7 @@ health_icon = pygame.image.load("Content/background/heart.png").convert_alpha()
 health_icon_scaled = pygame.transform.scale_by(health_icon, 0.1)
 
 # Groups
-player = pygame.sprite.GroupSingle(Player())
+
 bullets_group = pygame.sprite.Group()
 lvl_token_group = pygame.sprite.Group()
 gifts_group = pygame.sprite.Group()
@@ -740,9 +733,7 @@ chicken_parachute_group = pygame.sprite.Group()
 bosses_group = pygame.sprite.Group()
 meat_group = pygame.sprite.Group()
 # ------------------------------------------------------------------------------
-pause = False
-overlay_alpha = 0
-fade_speed = 8  # Speed of fade-in effect
+
 
 
 class Wave(pygame.sprite.Sprite):
@@ -830,6 +821,7 @@ class Level:
         self.read_level_data()
         self.chicken_per_wave = self.data["number of chickens in each wave"]
         self.number_of_waves = self.data["number of waves"]
+        self.music_played = False
 
     def generate_wave(self):
         wave = Wave(self.current_level, self.current_wave_number)
@@ -853,13 +845,11 @@ class Level:
                 self.wave_end_time = (
                     pygame.time.get_ticks()
                 )  # Record the time when the wave ended
-                if not hasattr(
-                        self, "music_played"
-                ):  # Check if music has already been played
-                    self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
-                    if SOUND_MUSIC:
-                        self.music.play()
-                        self.music_played = True  # Mark music as played
+                  # Check if music has already been played
+                self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
+                if SOUND_MUSIC:
+                    self.music.play()
+                    self.music_played = True  # Mark music as played
 
             # Calculate the time elapsed since the wave ended
             elapsed_time = pygame.time.get_ticks() - self.wave_end_time
@@ -876,84 +866,155 @@ class Level:
                     self.read_level_data()
                 else:
                     self.current_wave_number += 1
-
+                global change
+                change = True
                 del self.current_wave
                 self.current_wave = self.generate_wave()
                 del self.wave_end_time  # Reset the timer for the next wave
-                del self.music_played  # Reset the music flag for the next wave
+                self.music_played = False  # Reset the music flag for the next wave
             else:
                 self.current_wave.draw_level_and_wave()
         else:
             self.current_wave.update()
-
-
-start_up_level = 1
-start_up_wave = 1
-level = Level(start_up_level, start_up_wave)
 winner_music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
 bosses_group.add(Boss("boss", 50, 50))
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-        if event.type == pygame.KEYDOWN:  # to pause the game by pressing p
-            if event.key == pygame.K_p:
-                if not pause:
-                    overlay_alpha = 0  # Reset alpha for smooth fade-in
-                pause = not pause
-    # Screen
-    screen.blit(bk_ground, (0, 0))
-    if pause:
-        # Gradually increase overlay opacity for fade-in effect
-        if overlay_alpha < 180:
-            overlay_alpha += fade_speed
-            overlay_alpha = min(overlay_alpha, 180)  # set to 180 at max
-        pygame.mouse.set_visible(True)
-        overlay.set_alpha(overlay_alpha)
-        screen.blit(overlay, (0, 0))
-        screen.blit(text_surface, text_rect)
-    elif END:  # check
-        text = font.render("Winner", True, (255, 255, 255))
-        text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        screen.blit(text, text_rect)
-        if SOUND_MUSIC:
-            if winner_music.get_num_channels() == 0:
-                winner_music.play()  # Play the music
-        pygame.display.update()
-    elif not END:  # continue playing + anything we want to disappear upon pausing
-        pygame.mouse.set_visible(False)
-        # spawns tokens and gifts randomly todo: make it depends on something
-        # Gifts update
-        gifts_group.update()
-        gifts_group.draw(screen)
-        # lvl_token update
-        lvl_token_group.update()
-        lvl_token_group.draw(screen)
-        # health update
-        for i in range(player.sprite.health):
-            screen.blit(health_icon_scaled, (WIDTH - 45 * (i + 1), HEIGHT - 45))
-        # Bullets update
-        bullets_group.update()
-        bullets_group.draw(screen)
-        # eggs update
-        eggs_group.update()
-        eggs_group.draw(screen)
-        # chicken parachute update
-        # it does not need to be updated as each group have its own parachute chickens
-        # chicken_parachute_group.update()
-        # chicken_parachute_group.draw(screen)
-        # meat update
-        meat_group.update()
-        meat_group.draw(screen)
-        # bosses update
-        bosses_group.update()
-        bosses_group.draw(screen)
-        # Player update
-        player.update()
-        player.draw(screen)
-        # update level class -> update current wave -> update each group in current wave -> update all chickens in each group
-        level.update()
 
-    clock.tick(60)
-    pygame.display.update()
+# class buttons 
+
+change = False # to change save game button 
+class SaveButton(Button , pygame.sprite.Sprite):
+    """Button to save settings to file"""
+    def render_text(self):
+        self.image.fill((0, 0, 0, 0))  # Clear the surface
+        if self.hover and change : 
+            text_surface = self.font.render(self.text, True, self.color)
+            pygame.draw.rect(self.image, (20, 20, 20, 200), (0, 0, self.width + 50, self.height + 30 ), border_radius=20)
+        else:
+            text_surface = self.font.render(self.text, True, self.color if change else (50,50,50,200))
+            pygame.draw.rect(self.image, (0, 0, 0, 150) , (0, 0, self.width, self.height), border_radius=20)
+        text_rect = text_surface.get_rect(center=(self.width // 2, self.height // 2))
+        self.image.blit(text_surface, text_rect)
+    @staticmethod
+    def save():
+        global change
+        global settings
+        with open("saved game.json", "w") as file:
+            saved_game = {"current_level_parameter": level.current_level, "current_wave_parameter": level.current_wave_number, "bullet_level": player.sprite.bullet_lvl , "bullet_type": player.sprite.bull_type , "score" : player.sprite.score }
+            print(saved_game)
+            json.dump(saved_game, file)
+        change = False
+        settings['continue'] = True
+        with open('settings.json' , 'w') as file :
+            json.dump(settings,file)
+    def check_collison(self):
+        if pygame.mouse.get_pressed()[0]:  # Left mouse button
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos) :
+                self.save()
+    def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        self.hover = self.rect.collidepoint(mouse_pos)
+        # Only re-render if hover state changes
+        if self.hover or change:
+            self.render_text()
+        self.check_collison()
+
+class BackButton(Button):
+    pass
+
+def play_fun(current_level_parameter = 1 , current_wave_parameter = 1 , bullet_level = 1 , bullet_type = 'a' , score = 0):
+    global level , player , SOUND_EFFECT , SOUND_MUSIC , settings
+    settings = read_settings()
+    SOUND_EFFECT = settings['sound effects']
+    SOUND_MUSIC = settings['sound music']
+    level = Level(current_level_parameter, current_wave_parameter)
+    player = pygame.sprite.GroupSingle(Player(bullet_level=bullet_level , bullet_type=bullet_type , score=score))
+    pause = False
+    overlay_alpha = 0
+    fade_speed = 8  # Speed of fade-in effect
+    text_surface = font.render("Press 'ESC' to continue", True, (255, 255, 255))
+    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100))
+    save_button = SaveButton(WIDTH//2 , HEIGHT//2 + 100 , 200 , 60 , (0, 0, 0, 200), (255, 255, 255), 'Save game')
+    back_button = BackButton(WIDTH//2 , HEIGHT - 100 , 200 , 60 , (0, 0, 0, 200), (255, 255, 255), 'Back')
+    button_group = pygame.sprite.Group()
+    button_group.add(save_button)
+    button_group.add(back_button)
+    try:
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == pygame.KEYDOWN:  # to pause the game by pressing p
+                    if event.key == pygame.K_ESCAPE: # change from key (p) to (esc)
+                        if not pause:
+                            overlay_alpha = 0  # Reset alpha for smooth fade-in
+                        pause = not pause
+                if event.type == pygame.MOUSEBUTTONDOWN and pause:
+                        mouse_pos = pygame.mouse.get_pos()
+                        if back_button.rect.collidepoint(mouse_pos):
+                            global END
+                            END = False
+                            print(settings['continue'])
+                            return settings['continue'] # return to main menu and send new property to continue button
+            # Screen
+            screen.blit(bk_ground, (0, 0))
+            if pause:
+                # Gradually increase overlay opacity for fade-in effect
+                if overlay_alpha < 180:
+                    overlay_alpha += fade_speed
+                    overlay_alpha = min(overlay_alpha, 180)  # set to 180 at max
+                pygame.mouse.set_visible(True)
+                overlay.set_alpha(overlay_alpha)
+                screen.blit(overlay, (0, 0))
+                screen.blit(text_surface, text_rect)
+                button_group.update()
+                button_group.draw(screen)
+            elif END:  # check
+                text = font.render("Winner", True, (255, 255, 255))
+                text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                screen.blit(text, text_rect)
+                if SOUND_MUSIC:
+                    if winner_music.get_num_channels() == 0:
+                        winner_music.play()  # Play the music
+                pygame.display.update()
+            elif not END:  # continue playing + anything we want to disappear upon pausing
+                pygame.mouse.set_visible(False)
+                # spawns tokens and gifts randomly todo: make it depends on something
+                # Gifts update
+                gifts_group.update()
+                gifts_group.draw(screen)
+                # lvl_token update
+                lvl_token_group.update()
+                lvl_token_group.draw(screen)
+                # health update
+                for i in range(player.sprite.health):
+                    screen.blit(health_icon_scaled, (WIDTH - 45 * (i + 1), HEIGHT - 45))
+                # Bullets update
+                bullets_group.update()
+                bullets_group.draw(screen)
+                # eggs update
+                eggs_group.update()
+                eggs_group.draw(screen)
+                # chicken parachute update
+                # it does not need to be updated as each group have its own parachute chickens
+                # chicken_parachute_group.update()
+                # chicken_parachute_group.draw(screen)
+                # meat update
+                meat_group.update()
+                meat_group.draw(screen)
+                # bosses update
+                bosses_group.update()
+                bosses_group.draw(screen)
+                # Player update
+                player.update()
+                player.draw(screen)
+                # update level class -> update current wave -> update each group in current wave -> update all chickens in each group
+                level.update()
+
+            clock.tick(60)
+            pygame.display.update()
+    except Exception as error:
+        print(error)
+if __name__ == "__main__":
+    play_fun()
