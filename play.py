@@ -676,14 +676,14 @@ parachute_blue = pygame.transform.scale_by(parachute_blue, 0.5)
 
 chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").convert_alpha()
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
+chicken_green_animation_list = extract_frames(chicken_green_sheet, 1, 10)
+chicken_red_animation_list = extract_frames(chicken_red_sheet, 1, 10)
 
 chicken_boss_sheet = pygame.image.load("Content/Enemy/boss.png").convert_alpha()
 chicken_boss_animation_list = extract_frames(chicken_boss_sheet, 1, 10 , (150,150))
 chicken_bossRed_sheet = pygame.image.load("Content/Enemy/bossRed.png").convert_alpha()
 chicken_bossRed_animation_list = extract_frames(chicken_bossRed_sheet, 1, 10 , (150,150))
 
-chicken_green_animation_list = extract_frames(chicken_green_sheet, 1, 10)
-chicken_red_animation_list = extract_frames(chicken_red_sheet, 1, 10)
 
 lvl_up_token_sheet = pygame.image.load("Content/bullet/give.png").convert_alpha()
 lvl_up_animation_list = extract_frames(lvl_up_token_sheet, 1, 25)
@@ -882,7 +882,7 @@ bosses_group.add(Boss("boss", 50, 50))
 # class buttons 
 
 change = False # to change save game button 
-class SaveButton(Button , pygame.sprite.Sprite):
+class SaveButton(Button):
     """Button to save settings to file"""
     def render_text(self):
         self.image.fill((0, 0, 0, 0))  # Clear the surface
@@ -906,18 +906,18 @@ class SaveButton(Button , pygame.sprite.Sprite):
         settings['continue'] = True
         with open('settings.json' , 'w') as file :
             json.dump(settings,file)
-    def check_collison(self):
+    def check_collison(self,pause):
         if pygame.mouse.get_pressed()[0]:  # Left mouse button
             mouse_pos = pygame.mouse.get_pos()
-            if self.rect.collidepoint(mouse_pos) :
+            if self.rect.collidepoint(mouse_pos) and pause:
                 self.save()
-    def update(self):
+    def update(self , pause):
         mouse_pos = pygame.mouse.get_pos()
         self.hover = self.rect.collidepoint(mouse_pos)
         # Only re-render if hover state changes
         if self.hover or change:
             self.render_text()
-        self.check_collison()
+        self.check_collison(pause)
 
 class BackButton(Button):
     pass
@@ -968,7 +968,7 @@ def play_fun(current_level_parameter = 1 , current_wave_parameter = 1 , bullet_l
                 overlay.set_alpha(overlay_alpha)
                 screen.blit(overlay, (0, 0))
                 screen.blit(text_surface, text_rect)
-                button_group.update()
+                button_group.update(pause)
                 button_group.draw(screen)
             elif END:  # check
                 text = font.render("Winner", True, (255, 255, 255))

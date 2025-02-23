@@ -1,8 +1,6 @@
-import pygame
-pygame.init()
+import pygame 
+from init import *
 text_font = pygame.font.SysFont('comicsans', 30, bold=True)
-
-
 class Button(pygame.sprite.Sprite):
     def __init__(self, x: float, y: float, width: float, height: float, bg_color, color, text: str) -> None:
         super().__init__()
@@ -16,7 +14,6 @@ class Button(pygame.sprite.Sprite):
         self.image = pygame.Surface((width, height), pygame.SRCALPHA)
         self.rect = self.image.get_rect(center=(x, y))
         self.render_text()  # Render initially
-
     def render_text(self):
         """Renders the button with text and hover effects."""
         self.image.fill((0, 0, 0, 0))  # Clear previous surface
@@ -30,7 +27,7 @@ class Button(pygame.sprite.Sprite):
         text_rect = text_surface.get_rect(center=(self.width // 2, self.height // 2))
         self.image.blit(text_surface, text_rect)
 
-    def update(self):
+    def update(self , change = False , pause = False):
         mouse_pos = pygame.mouse.get_pos()
         prev_hover = self.hover
         self.hover = self.rect.collidepoint(mouse_pos)
@@ -40,3 +37,20 @@ class Button(pygame.sprite.Sprite):
             self.render_text()
 
 
+class SaveButton(Button):
+    """Button to save settings to file"""
+    def save(self):
+        pass
+    def check_collison(self,pause = False):
+        if pygame.mouse.get_pressed()[0]:  # Left mouse button
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos) and pause :
+                self.save()
+    def update(self , change=False , pause = False):
+        print(change , pause)
+        mouse_pos = pygame.mouse.get_pos()
+        self.hover = self.rect.collidepoint(mouse_pos)
+        # Only re-render if hover state changes
+        if self.hover or change:
+            self.render_text()
+        self.check_collison(pause=pause)
