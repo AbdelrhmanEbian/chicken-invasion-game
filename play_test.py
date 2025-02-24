@@ -1,6 +1,5 @@
 from button import *
 from wave_and_level import Level 
-from init import *
 from sprite_groups import (
     bullets_group,
     gifts_group,
@@ -8,8 +7,6 @@ from sprite_groups import (
     lvl_token_group,
     meat_group,
 )
-# Initialize game settings
-# Initialize Pygame
 # Load assets
 health_icon = pygame.image.load("Content/background/heart.png").convert_alpha()
 health_icon_scaled = pygame.transform.scale_by(health_icon, 0.1)
@@ -49,7 +46,6 @@ def play_fun(
                         if not settings.is_game_pause:
                             overlay_alpha = 0  # Reset alpha for smooth fade-in
                         if not settings.game_finished :
-                            print('in')
                             settings.is_game_pause = not settings.is_game_pause
                 if event.type == pygame.MOUSEBUTTONDOWN and settings.is_game_pause:
                     mouse_pos = pygame.mouse.get_pos()

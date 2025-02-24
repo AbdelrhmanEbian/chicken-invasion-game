@@ -55,6 +55,7 @@ class NewGame(Button):
         from play_test import play_fun
         bg_music.stop()
         settings.is_game_pause = False
+        settings.game_finished = False
         return_value = play_fun()
         bg_music.play()
         if not settings.continue_game == return_value:

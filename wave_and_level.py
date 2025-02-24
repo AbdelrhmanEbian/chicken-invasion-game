@@ -1,12 +1,12 @@
 import pygame
 import json
 from init import *
-from enemy_groups import ChickenGroup, BossGroup
+from enemy_groups import ChickenGroup
 from button import text_font
 from enemies import ChickenParachute
 import random
 from player import Player
-class Wave(pygame.sprite.Sprite):
+class Wave():
     """Represents a wave of enemies."""
     def __init__(self, level, wave):
         super().__init__()
@@ -14,16 +14,10 @@ class Wave(pygame.sprite.Sprite):
         self.current_wave_number = wave
         self.data = {}
         self.read_wave_data()
-        self.wave_type = self.data["wave type"]
         self.number_of_groups = len(self.data["waves"])
         self.waves = self.data["waves"]
         self.groups = []
-        if self.wave_type == 'normal':
-            self.total_chickens = sum(
-                [group["number of chicken"] for group in self.data["waves"]])
-            self.generate_groups__of_chickens()
-        elif self.wave_type == 'boss':
-            self.generate_boss_group()
+        self.generate_groups__of_chickens()
         self.wave_ended = False
 
     def read_wave_data(self):
@@ -37,27 +31,20 @@ class Wave(pygame.sprite.Sprite):
 
     def generate_groups__of_chickens(self):
         """Generates groups of chickens for the wave."""
-        chicken_wave = [
-            ChickenGroup(
+        for group in self.waves:
+                self.groups.append(
+                ChickenGroup(
                 x=group["final x"],
                 y=group["final y"],
                 chicken_type=group["type"],
-                number_of_chickens=group["number of chicken"],
-                chicken_per_row=group["number of chicken per row"],
+                number_of_chickens=group["number of chicken"] if  "number of chicken" in group else None,
+                chicken_per_row=group["number of chicken per row"] if  "number of chicken per row" in group else None,
                 initial_x=group["initial x"],
                 initial_y=group["initial y"],
-                group_order=index,
                 hidden=group["hidden"],
-            )
-            for index, group in enumerate(self.waves)
-        ]
-        self.groups = chicken_wave
-
-    def generate_boss_group(self):
-        """Generates a boss group for the wave."""
-        boss_wave = BossGroup(self.waves)
-        self.groups = [boss_wave]
-
+                move_randomly=group["move randomly"] if "move randomly" in group else None,
+                ))
+                
     def get_groups(self):
         """Returns the groups of enemies in the wave."""
         return self.groups
@@ -77,15 +64,8 @@ class Wave(pygame.sprite.Sprite):
         if len(self.groups) == 0:
             self.wave_ended = True
             return
-        if self.wave_type == 'normal':
-            move_randomly = [chicken_group.drop for chicken_group in self.groups]
-            for chicken_group in self.groups:
-                chicken_group.update(False if False in move_randomly else True , self.groups)
-        elif self.wave_type == 'boss':
-            for boss_group in self.groups:
-                boss_group.update(self.groups)
-
-
+        for group in self.groups:
+            group.update(self.groups)
 class Level:
     """Represents a level in the game."""
     def __init__(self, level: int, wave: int):

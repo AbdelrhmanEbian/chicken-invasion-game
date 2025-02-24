@@ -1,5 +1,4 @@
 {
-  "wave type":"normal",
   "waves": [
     {
       "final x": 50,
@@ -9,7 +8,19 @@
       "type": "red chicken",
       "initial y": 50,
       "initial x": 1000,
-      "hidden":"right"
+      "hidden":"right",
+      "move randomly":false
+    },
+    {
+      "final x": 500,
+      "final y": 50,
+      "number of chicken": 5,
+      "number of chicken per row": 5,
+      "type": "green chicken",
+      "initial y": -100,
+      "initial x": 500,
+      "hidden":"up",
+      "move randomly":true
     }
   ]
 }

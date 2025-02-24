@@ -32,7 +32,7 @@ roasted_chicken_image = pygame.transform.scale_by(roasted_chicken_image, 0.35)
 roasted_list = [roasted_leg_image, roasted_chicken_image]
 
 egg_image = pygame.image.load("Content/Enemy/egg.png").convert_alpha()
-
+egg_lay_sound = pygame.mixer.Sound("Content/Music/chicken/Chicken_lay.ogg")
 class Drops(pygame.sprite.Sprite):
     """Base class for drops and collectibles."""
     def __init__(self, animation_list=None, image=None):
@@ -51,13 +51,11 @@ class Drops(pygame.sprite.Sprite):
             midbottom=(random.randint(self.image.get_width() + 5, WIDTH - self.image.get_width() - 5), -100)
         )
         self.mask = pygame.mask.from_surface(self.image)
-
     def drops(self):
         """Moves the drop downward with gravity."""
         self.rect.y += self.gravity
         if self.rect.y > HEIGHT:
             self.kill()
-
     def animate(self):
         """Animates the drop."""
         self.frame_index += self.frame_speed
@@ -82,8 +80,6 @@ class BulletChangeGift(Drops):
     def __init__(self):
         self.type = random.randint(0, 1)
         super().__init__(bullet_change_animation_lists[self.type])
-
-
 class Egg(Drops):
     """Egg drop."""
     def __init__(self, pos=None):
@@ -92,6 +88,8 @@ class Egg(Drops):
         self.broken = False
         if pos:
             self.rect.midbottom = pos
+        if settings.sound_effects:
+            egg_lay_sound.play()
 
     def update(self):
         """Updates the egg's state (e.g., breaking animation)."""

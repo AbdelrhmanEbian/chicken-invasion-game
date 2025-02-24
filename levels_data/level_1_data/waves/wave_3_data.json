@@ -1,20 +1,20 @@
 {
-  "wave type":"boss",
     "waves": [
       {
         "type": "boss",
         "position_x":100,
-        "position_y":300
+        "position_y":300,
+        "initial y": 700,
+        "initial x": 100,
+        "hidden":"bottom"
       },
       {
         "type": "boss",
-        "position_x":300,
-        "position_y":300
-      },
-      {
-        "type": "boss_red",
-        "position_x":500,
-        "position_y":300
+        "position_x":100,
+        "position_y":300,
+        "initial y": 700,
+        "initial x": 100,
+        "hidden":"bottom"
       }
     ]
   }

@@ -10,7 +10,7 @@ chicken_die_sounds = list(
         for i in range(1, 5)
     ]
 )
-egg_lay_sound = pygame.mixer.Sound("Content/Music/chicken/Chicken_lay.ogg")
+
 parachute_red = pygame.image.load(
     "Content/Enemy/chickenParachuteRed.png"
 ).convert_alpha()
@@ -55,7 +55,7 @@ class Enemy(Drops):
                 bullet.kill()
 class Chicken(Enemy):
     """Base class for chicken enemies."""
-    def __init__(self, image, animation_list=None, x=None, y=None, group_order=None):
+    def __init__(self, image, animation_list=None, x=None, y=None):
         super().__init__(image=image, animation_list=animation_list)
         self.rect = self.image.get_rect(center=(x, y))
         self.health = 5
@@ -69,10 +69,10 @@ class Chicken(Enemy):
         self.frame_index += self.frame_speed
         self.image = self.frames[int(self.frame_index)]
 
-    def update(self, drop):
+    def update(self):
         """Updates the chicken's state (e.g., collisions, animation)."""
         self.check_collision()
-        if random.randint(0, 1000) == 5 and drop:
+        if random.randint(0, 1000) == 5:
             eggs_group.add(Egg(self.rect.midbottom))
         self.animate()
 
@@ -96,19 +96,18 @@ class ChickenParachute(Enemy):
         if random.randint(0, 200) == 155:
             pos = self.rect.midbottom
             eggs_group.add(Egg(pos))
-            if settings.sound_effects:
-                egg_lay_sound.play()
 class Boss(Enemy):
     """Boss enemy class."""
-    def __init__(self, type, x, y):
+    def __init__(self, type, x, y , hidden , initial_x , initial_y):
         self.type = type
+        self.is_move_randomly = False
         if self.type == "boss":
             super().__init__(animation_list=chicken_boss_animation_list)
             self.health = 20
         elif self.type == "boss_red":
             super().__init__(animation_list=chicken_bossRed_animation_list)
             self.health = 15
-        self.rect = self.image.get_rect(midbottom=(x, y))
+        self.rect = self.image.get_rect(midbottom=(initial_x, initial_y))
         self.last_move_time = pygame.time.get_ticks()
         self.move_interval = 3000
         self.ability_to_move = False
@@ -118,17 +117,31 @@ class Boss(Enemy):
         self.speed_x = 0
         self.speed_y = 0
         self.frame_speed = 0.2
+        self.hidden = hidden
+        self.x = x
+        self.y = y
     def check_ability_to_move(self):
         current_time = pygame.time.get_ticks()
-        if (self.last_move_time + self.move_interval <= current_time and not self.ability_to_move):
-            self.ability_to_move = True
+        if (self.last_move_time + self.move_interval <= current_time and not self.is_move_randomly):
+            self.is_move_randomly = True
             self.distination_x = random.randint(30, WIDTH - 30)
             self.distination_y = random.randint(30, HEIGHT - 30)
     def update(self):
         """Updates the boss's state (e.g., collisions, movement, attacks)."""
+        if self.hidden == "right" and self.rect.center[0] > self.x and not self.ability_to_move:
+            self.rect.x -= 2
+        elif self.hidden == "left" and self.rect.center[0] < self.x and not self.ability_to_move:
+            self.rect.x += 2
+        elif self.hidden == "down" and  self.rect.center[1] > self.y and not self.ability_to_move:
+            self.rect.y -= 2
+        elif self.hidden == "up" and self.rect.center[1] < self.y and not self.ability_to_move:
+            self.rect.y += 2
+        else:
+            self.ability_to_move = True
         self.check_collision()
-        self.check_ability_to_move()
         if self.ability_to_move:
+            self.check_ability_to_move()
+        if self.is_move_randomly:
             self.move_randomly()
         if self.type == "boss_red":
             if (
@@ -146,7 +159,7 @@ class Boss(Enemy):
         self.rect.centerx -= speed_x
         self.rect.centery -= speed_y
         if self.speed_x == speed_x and self.speed_y == speed_y:
-            self.ability_to_move = False
+            self.is_move_randomly = False
             self.last_move_time = pygame.time.get_ticks()
         self.speed_x = speed_x
         self.speed_y = speed_y

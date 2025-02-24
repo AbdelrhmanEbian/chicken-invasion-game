@@ -41,10 +41,10 @@ class Player(pygame.sprite.Sprite):
         pos_diff = [self.rect.centerx - mouse_pos[0], self.rect.centery - mouse_pos[1]]
         self.rect.x -= pos_diff[0] * 0.16
         self.rect.y -= pos_diff[1] * 0.16
-        self.rect.right = min(self.rect.right, WIDTH - 10)
-        self.rect.bottom = min(self.rect.bottom, HEIGHT - 10)
-        # self.rect.left = max(self.rect.right, 10)
-        # self.rect.top = max(self.rect.bottom, 10)
+        self.rect.x = max(20, min(self.rect.x, WIDTH - self.rect.width - 20))
+        self.rect.y = max(20, min(self.rect.y, HEIGHT - self.rect.height - 20))
+        # self.rect.right = min(self.rect.right, WIDTH - 10)
+        # self.rect.bottom = min(self.rect.bottom, HEIGHT - 10)
 
     def take_damage(self):
         """Reduces player health and makes them invincible for a short time."""
