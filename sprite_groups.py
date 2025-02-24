@@ -1,5 +1,4 @@
 import pygame
-
 bullets_group = pygame.sprite.Group()
 lvl_token_group = pygame.sprite.Group()
 gifts_group = pygame.sprite.Group()

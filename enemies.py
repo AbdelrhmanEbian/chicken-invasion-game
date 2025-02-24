@@ -2,8 +2,7 @@ from init import *
 import math
 import random
 from drops import Drops, Meat, Egg
-from utils import read_settings, extract_frames
-SOUND_EFFECT = read_settings()["sound effects"]
+from utils import  extract_frames
 from sprite_groups import bullets_group, eggs_group, meat_group
 chicken_die_sounds = list(
     [
@@ -49,7 +48,7 @@ class Enemy(Drops):
                         meat_group.add(Meat(0, (pos_x, pos_y)))
                     elif meat_drop_random_number in range(51, 76):
                         meat_group.add(Meat(1, (pos_x, pos_y)))
-                if SOUND_EFFECT:
+                if settings.sound_effects:
                     random.choice(chicken_die_sounds).play()
             else:
                 self.health -= bullet.damage
@@ -90,18 +89,15 @@ class ChickenParachute(Enemy):
         super().__init__(image=image)
         self.gravity = 1
         self.health = 5
-
-    def update(self, drop):
+    def update(self):
         """Updates the parachute chicken's state (e.g., collisions, egg drops)."""
         self.drops()
         self.check_collision()
-        if drop:
-            if random.randint(0, 200) == 155:
-                pos = self.rect.midbottom
-                eggs_group.add(Egg(pos))
-                if SOUND_EFFECT:
-                    egg_lay_sound.play()
-
+        if random.randint(0, 200) == 155:
+            pos = self.rect.midbottom
+            eggs_group.add(Egg(pos))
+            if settings.sound_effects:
+                egg_lay_sound.play()
 class Boss(Enemy):
     """Boss enemy class."""
     def __init__(self, type, x, y):
@@ -112,7 +108,7 @@ class Boss(Enemy):
         elif self.type == "boss_red":
             super().__init__(animation_list=chicken_bossRed_animation_list)
             self.health = 15
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(midbottom=(x, y))
         self.last_move_time = pygame.time.get_ticks()
         self.move_interval = 3000
         self.ability_to_move = False

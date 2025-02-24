@@ -3,8 +3,9 @@ import json
 from init import *
 from enemy_groups import ChickenGroup, BossGroup
 from button import text_font
-from utils import read_settings
-SOUND_MUSIC = read_settings()['sound music']
+from enemies import ChickenParachute
+import random
+from player import Player
 class Wave(pygame.sprite.Sprite):
     """Represents a wave of enemies."""
     def __init__(self, level, wave):
@@ -47,7 +48,6 @@ class Wave(pygame.sprite.Sprite):
                 initial_y=group["initial y"],
                 group_order=index,
                 hidden=group["hidden"],
-                number_of_parachute_chickens=group["number of parachute chickens"],
             )
             for index, group in enumerate(self.waves)
         ]
@@ -99,15 +99,21 @@ class Level:
         self.chicken_per_wave = self.data["number of chickens in each wave"]
         self.number_of_waves = self.data["number of waves"]
         self.music_played = False
-        self.change_save_button = False
-        self.game_finished = False
         self.change_wave_and_level  = False
-
+        self.is_generate_chicken_parachute = True
+        self.chicken_parachute_group = pygame.sprite.Group()
+        self.player = None
+        self.number_of_levels = 2
+        self.game_ended = False
+    def generate_chicken_parachute(self):
+        if self.is_generate_chicken_parachute:
+            if not random.randint(0, 180):
+                parachute_chicken = ChickenParachute()
+                self.chicken_parachute_group.add(parachute_chicken)
     def generate_wave(self):
         """Generates a wave for the level."""
         wave = Wave(self.current_level, self.current_wave_number)
         return wave
-
     def read_level_data(self):
         """Reads level data from the JSON file."""
         with open(
@@ -122,28 +128,66 @@ class Level:
     def stop_music(self):
         if self.music_played:
             self.music.stop()
+    def save_game(self):
+        settings.continue_game = True
+        if settings.game_finished :
+            settings.continue_game = False
+            self.current_level = 1
+            self.current_wave_number = 1
+            self.player.sprite.bullet_lvl = 1
+            self.player.sprite.bull_type = 'a'
+            self.player.sprite.score = 0
+            self.player.sprite.health = 3
+        with open("saved game.json", "w") as file:
+            saved_game = {
+                "current_level_parameter": self.current_level,
+                "current_wave_parameter": self.current_wave_number,
+                "bullet_level": self.player.sprite.bullet_lvl,
+                "bullet_type": self.player.sprite.bull_type,
+                "score": self.player.sprite.score,
+                "health":self.player.sprite.health
+            }
+            json.dump(saved_game, file)
+        settings_dic = settings.__dict__.copy()
+        del settings_dic['is_game_pause'] , settings_dic['game_finished'] , settings_dic['is_winner']
+        with open("settings.json", "w") as file:
+            json.dump(settings_dic, file)
+    def generate_player(self , bullet_level , bullet_type , score , health):
+        """Generates a player for the level."""
+        player = pygame.sprite.GroupSingle(
+            Player(bullet_level=bullet_level, bullet_type=bullet_type, score=score , health=health)
+        )
+        self.player = player
     def update(self):
         """Updates the level's state (e.g., wave progression)."""
-        if self.current_wave.wave_ended:
+        if self.current_wave.wave_ended and len(self.chicken_parachute_group) == 0:
+            self.is_generate_chicken_parachute = False
             if not hasattr(self, "wave_end_time"):
                 self.wave_end_time = pygame.time.get_ticks()
                 self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
-                if SOUND_MUSIC :
+                if settings.sound_music :
                     self.music.play()
                     self.music_played = True
-            if not self.change_wave_and_level:
+            elapsed_time = pygame.time.get_ticks() - self.wave_end_time
+            if not self.change_wave_and_level or self.game_ended:
                 if self.current_wave_number == self.number_of_waves :
-                    if self.current_level == 2:
-                        self.game_finished = True
+                    if self.current_level == self.number_of_levels:
+                        if self.game_ended and elapsed_time >= 3000:
+                            settings.game_finished = True
+                            settings.is_game_pause = True
+                            self.music.stop()
+                            self.save_game()
+                        settings.is_winner = True
+                        self.game_ended = True
+                        self.current_wave.draw_level_and_wave()
                         return
                     self.current_level += 1
                     self.current_wave_number = 1
                     self.level_ended = True
                 else:
                     self.current_wave_number += 1
+                self.save_game()
             self.change_wave_and_level = True
-            self.change_save_button = True
-            elapsed_time = pygame.time.get_ticks() - self.wave_end_time
             if elapsed_time >= 3000:
                 self.music.stop()
                 if self.level_ended:
@@ -156,4 +200,6 @@ class Level:
             else:
                 self.current_wave.draw_level_and_wave()
         else:
+            self.is_generate_chicken_parachute = False if self.current_wave.wave_ended else True
+            self.generate_chicken_parachute()
             self.current_wave.update()

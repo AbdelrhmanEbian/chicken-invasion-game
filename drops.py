@@ -48,7 +48,7 @@ class Drops(pygame.sprite.Sprite):
             self.frame_index = 0
             self.frame_speed = 0.2
         self.rect = self.image.get_rect(
-            midbottom=(random.randint(0, WIDTH - self.image.get_width()), -100)
+            midbottom=(random.randint(self.image.get_width() + 5, WIDTH - self.image.get_width() - 5), -100)
         )
         self.mask = pygame.mask.from_surface(self.image)
 

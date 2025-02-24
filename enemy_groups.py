@@ -1,6 +1,6 @@
 import pygame
 from init import *
-from enemies import Chicken,ChickenParachute,Boss
+from enemies import Chicken,Boss
 import random
 import math
 from utils import extract_frames
@@ -31,7 +31,6 @@ class ChickenGroup:  # check
             y,
             chicken_type,
             number_of_chickens,
-            number_of_parachute_chickens,
             chicken_per_row,
             initial_x,
             initial_y,
@@ -48,8 +47,6 @@ class ChickenGroup:  # check
         self.initial_y = initial_y
         self.number_of_chickens = number_of_chickens
         self.chicken_per_row = chicken_per_row
-        self.number_of_parachute_chickens = number_of_parachute_chickens
-        self.number_of_parachute_chickens_generated = 0
         if chicken_type == "red chicken":
             self.animation_list = chicken_red_animation_list
         elif chicken_type == "green chicken":
@@ -57,7 +54,6 @@ class ChickenGroup:  # check
         self.angle = random.uniform(0, 2 * math.pi)
         self.killed_chicken = 0
         self.generate_chicken_group()
-
     def generate_chicken_group(self):
         relative_height = self.initial_y
         chicken_order_in_row = 0
@@ -75,18 +71,6 @@ class ChickenGroup:  # check
             )
             self.chicken_group.add(chicken)
             chicken_order_in_row += 1
-
-    def generating_parachute_chicken(self):
-        if (
-                self.number_of_parachute_chickens
-                and self.number_of_parachute_chickens
-                > self.number_of_parachute_chickens_generated
-        ):
-            if not random.randint(0, 180):
-                parachute_chicken = ChickenParachute()
-                self.chicken_group.add(parachute_chicken)
-                self.number_of_parachute_chickens_generated += 1
-
     def move_randomly(self):  # move all chickens randomly (inaccurate till now)
         speed = 3
         move_in_x = speed * math.cos(self.angle)
@@ -114,26 +98,17 @@ class ChickenGroup:  # check
         first_chicken = self.chicken_group.sprites()[0]
         if self.hidden == "right" and first_chicken.rect.center[0] > self.x and not self.drop:
             for chicken in self.chicken_group:
-                if isinstance(chicken, ChickenParachute):
-                    break
                 chicken.rect.x -= 2
         elif self.hidden == "left" and first_chicken.rect.center[0] < self.x and not self.drop:
             for chicken in self.chicken_group:
-                if isinstance(chicken, ChickenParachute):
-                    break
                 chicken.rect.x += 2
         elif self.hidden == "down" and first_chicken.rect.center[1] > self.y and not self.drop:
             for chicken in self.chicken_group:
-                if isinstance(chicken, ChickenParachute):
-                    break
                 chicken.rect.y -= 2
         elif self.hidden == "up" and first_chicken.rect.center[1] < self.y and not self.drop:
             for chicken in self.chicken_group:
-                if isinstance(chicken, ChickenParachute):
-                    break
                 chicken.rect.y += 2
         else:
             self.drop = True
-        self.generating_parachute_chicken()
         self.chicken_group.update(self.drop)
         self.chicken_group.draw(screen)

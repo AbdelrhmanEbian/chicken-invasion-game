@@ -9,8 +9,7 @@
       "type": "red chicken",
       "initial y": 50,
       "initial x": 1000,
-      "hidden":"right",
-      "number of parachute chickens": 2
+      "hidden":"right"
     }
   ]
 }

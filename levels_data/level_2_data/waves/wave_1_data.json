@@ -9,8 +9,8 @@
         "type": "red chicken",
         "initial y": 50,
         "initial x": 1000,
-        "hidden":"right",
-        "number of parachute chickens": 0
+        "hidden":"right"
+        
       },
       {
         "final x": 50,
@@ -20,8 +20,8 @@
         "type": "green chicken",
         "initial y": -200,
         "initial x": 50,
-        "hidden":"up",
-        "number of parachute chickens": 10
+        "hidden":"up"
+        
       },
       {
           "final x": 50,
@@ -31,8 +31,8 @@
           "type": "green chicken",
           "initial y": 50,
           "initial x": -300,
-          "hidden":"left",
-          "number of parachute chickens": 10
+          "hidden":"left"
+          
         },
         {
           "final x": 600,
@@ -42,8 +42,8 @@
           "type": "red chicken",
           "initial y": 600,
           "initial x": 400,
-          "hidden":"down",
-          "number of parachute chickens": 0
+          "hidden":"down"
+        
         }
     ]
   }

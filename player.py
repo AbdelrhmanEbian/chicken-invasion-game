@@ -5,12 +5,9 @@ import time
 from init import *
 from sprite_groups import lvl_token_group , bullets_group , eggs_group ,meat_group , chicken_parachute_group , gifts_group
 from enemies import Chicken , ChickenParachute , Boss
-from utils import read_settings
 from drops import LvlUpToken , BulletChangeGift
-SOUND_EFFECT = read_settings()['sound effects']
-SOUND_MUSIC = read_settings()['sound music']
 SHIP_SIZE = 50
-SHIP_POS = [WIDTH / 2, HEIGHT - 20]  # Starting position
+SHIP_POS = [WIDTH // 2, HEIGHT - 20]  # Starting position
 BULLET_COOLDOWN = 0.3  # Cooldown between shots
 bullet_sound = pygame.mixer.Sound("Content/Music/bullet/a.ogg")
 lvl_up_sound = pygame.mixer.Sound("Content/Music/bullet/levelUp.ogg")
@@ -44,8 +41,10 @@ class Player(pygame.sprite.Sprite):
         pos_diff = [self.rect.centerx - mouse_pos[0], self.rect.centery - mouse_pos[1]]
         self.rect.x -= pos_diff[0] * 0.16
         self.rect.y -= pos_diff[1] * 0.16
-        self.rect.right = min(self.rect.right, WIDTH)
+        self.rect.right = min(self.rect.right, WIDTH - 10)
         self.rect.bottom = min(self.rect.bottom, HEIGHT - 10)
+        # self.rect.left = max(self.rect.right, 10)
+        # self.rect.top = max(self.rect.bottom, 10)
 
     def take_damage(self):
         """Reduces player health and makes them invincible for a short time."""
@@ -143,7 +142,7 @@ class Player(pygame.sprite.Sprite):
             )
             bullets_g.add(Bullet(self))
         try:
-            if SOUND_EFFECT:
+            if settings.sound_effects:
                 bullet_sound.play()
         except pygame.error as e:
             print(f"Sound file error: {e}")
@@ -159,7 +158,7 @@ class Player(pygame.sprite.Sprite):
                             self.bullet_lvl += 1
                             sprite.kill()
                             try:
-                                if SOUND_EFFECT:
+                                if settings.sound_effects:
                                     lvl_up_sound.play()
                             except pygame.error as e:
                                 print(f"Sound file error: {e}")
@@ -168,7 +167,7 @@ class Player(pygame.sprite.Sprite):
                             if self.bull_type == self.bull_types[sprite.type]:
                                 self.bullet_lvl += 1
                                 try:
-                                    if SOUND_EFFECT:
+                                    if settings.sound_effects:
                                         lvl_up_sound.play()
                                 except pygame.error as e:
                                     print(f"Sound file error: {e}")
