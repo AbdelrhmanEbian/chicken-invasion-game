@@ -62,7 +62,7 @@ class BackButton(Button):
 def settings_menu(screen, bg_image, bg_music):
     global settings_dic
     settings_dic = settings.__dict__.copy()
-    del settings_dic['is_game_pause'] , settings['game_finished']
+    del settings_dic['is_game_pause'] , settings_dic['game_finished'] , settings_dic['is_winner']
     """Displays the settings menu using the shared screen and resources."""
     easy = DifficultyButton(510, 300, 120, 50, (255, 255, 255), "Easy", "difficulty", 1)
     normal = DifficultyButton(660, 300, 120, 50, (255, 255, 255), "Normal", "difficulty", 2)
