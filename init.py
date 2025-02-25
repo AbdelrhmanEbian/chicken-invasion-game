@@ -13,4 +13,5 @@ overlay = pygame.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(100)
 overlay.fill((0, 0, 0))
 fade_speed = 8  # Speed of fade-in effect
+level_number = 2
 settings = Settings()

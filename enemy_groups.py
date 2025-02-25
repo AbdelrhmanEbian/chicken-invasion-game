@@ -8,22 +8,6 @@ chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").conver
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
 chicken_green_animation_list = extract_frames(chicken_green_sheet, 1, 10)
 chicken_red_animation_list = extract_frames(chicken_red_sheet, 1, 10)
-# class BossGroup:
-#     def __init__(self, boss_wave):
-#         self.wave = boss_wave
-#         self.chicken_group = pygame.sprite.Group()
-#         self.genarate_boss()
-#     def genarate_boss(self):
-#         for boss in self.wave:
-#             boss_obj = Boss(type=boss['type'], x=boss['position_x'], y=boss['position_y'])
-#             self.chicken_group.add(boss_obj)
-#     def update(self , groups):
-#         if len(self.chicken_group) == 0:
-#             groups.remove(self)
-#             del self
-#             return
-#         self.chicken_group.update()
-#         self.chicken_group.draw(screen)
 class ChickenGroup:  # check
     def __init__(
             self,
@@ -81,16 +65,12 @@ class ChickenGroup:  # check
     def move_randomly(self):
         move_in_x = self.speed * math.cos(self.angle)
         move_in_y = self.speed * math.sin(self.angle)
-
-
         distance_in_x = move_in_x * self.move_interval / 1000
         distance_in_y = move_in_y * self.move_interval / 1000
-
         left = min(chicken.rect.left for chicken in self.chicken_group)
         right = max(chicken.rect.right for chicken in self.chicken_group)
         top = min(chicken.rect.top for chicken in self.chicken_group)
         bottom = max(chicken.rect.bottom for chicken in self.chicken_group)
-
         if left + distance_in_x < 0 or right + distance_in_x > WIDTH:
             self.angle = math.pi - self.angle  # Reverse X direction
             move_in_x = self.speed * math.cos(self.angle)
@@ -99,8 +79,6 @@ class ChickenGroup:  # check
             self.angle = -self.angle  # Reverse Y direction
             move_in_y = self.speed * math.sin(self.angle)
             self.last_move_time = pygame.time.get_ticks()
-
-        # Move all chickens in the group
         for chicken in self.chicken_group:
             if isinstance(chicken, Boss):  # Skip Boss chickens
                 continue

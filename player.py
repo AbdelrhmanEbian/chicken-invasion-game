@@ -1,26 +1,31 @@
-import pygame
 import math
 import random
 import time
+
+from drops import LvlUpToken, BulletChangeGift
+from enemies import Chicken, ChickenParachute, Boss
 from init import *
-from sprite_groups import lvl_token_group , bullets_group , eggs_group ,meat_group , chicken_parachute_group , gifts_group
-from enemies import Chicken , ChickenParachute , Boss
-from drops import LvlUpToken , BulletChangeGift
+from sprite_groups import lvl_token_group, bullets_group, eggs_group, meat_group, chicken_parachute_group, gifts_group
+
 SHIP_SIZE = 50
-SHIP_POS = (WIDTH // 2, HEIGHT - 20)  # Starting position
+SHIP_POS = [WIDTH // 2, HEIGHT + 20]  # Starting position
 BULLET_COOLDOWN = 0.3  # Cooldown between shots
 bullet_sound = pygame.mixer.Sound("Content/Music/bullet/a.ogg")
 lvl_up_sound = pygame.mixer.Sound("Content/Music/bullet/levelUp.ogg")
 score_font = pygame.font.Font("Content/7segment.ttf", 40)
+
+
 class Player(pygame.sprite.Sprite):
     """Player class representing the player's ship."""
-    def __init__(self, bullet_level=1, bullet_type='a', score=0 , health = 3):
+
+    def __init__(self, bullet_level=1, bullet_type='a', score=0, health=3):
         super().__init__()
         self.angle = None
         self.score = score
+        self.move = False
         self.image = pygame.image.load("Content/ship.png").convert_alpha()
         self.image = pygame.transform.smoothscale(self.image, (SHIP_SIZE, SHIP_SIZE))
-        self.rect = self.image.get_rect(midbottom=(SHIP_POS[0], SHIP_POS[1]))
+        self.rect = self.image.get_rect(midtop=SHIP_POS)
         self.last_shot_time = 0  # Store the last time a bullet was fired
         self.bullet_lvl = bullet_level
         self.bull_type = bullet_type
@@ -31,17 +36,19 @@ class Player(pygame.sprite.Sprite):
         self.lvl_token_count = 0
         self.gift_count = 0
         # Invincibility arguments
-        self.invincible = False
+        self.invincible = True
         self.invincible_timer = 0
         self.invincibility_duration = 1000
         self.death = False
-        self.transiton_down = False
+        self.transition_down = False
         self.level_transition = False
-        self.death_img =  pygame.transform.smoothscale(pygame.image.load('Content/shipDie.png').convert_alpha() , (SHIP_SIZE , SHIP_SIZE))
+        self.death_img = pygame.transform.smoothscale(pygame.image.load('Content/shipDie.png').convert_alpha(),
+        (SHIP_SIZE, SHIP_SIZE))
         self.death_time = 0
         self.death_duration = 3000
         self.music_death = pygame.mixer.Sound('Content/Music/dead.ogg')
         self.overlay_screen_alpha = 0
+
     def animation_death(self):
         elapsed_time = pygame.time.get_ticks() - self.death_time
         scale_factor = 1 + (elapsed_time / 1500)
@@ -49,14 +56,15 @@ class Player(pygame.sprite.Sprite):
             pygame.image.load('Content/shipDie.png').convert_alpha(),
             (int(SHIP_SIZE * scale_factor), int(SHIP_SIZE * scale_factor)))
         self.image = self.death_img
-        self.rect = self.image.get_rect(center=self.rect.center)  
+        self.rect = self.image.get_rect(center=self.rect.center)
         if settings.sound_music:
             self.music_death.play()
         if elapsed_time >= self.death_duration:
             settings.is_winner = False
             settings.is_game_pause = True
             settings.game_finished = True
-    def player_transition(self): ## add here cool down 
+
+    def player_transition(self):  # add here cool down
         # add overlay
         if self.overlay_screen_alpha < 180:
             self.overlay_screen_alpha += fade_speed
@@ -64,39 +72,44 @@ class Player(pygame.sprite.Sprite):
         overlay.set_alpha(self.overlay_screen_alpha)
         screen.blit(overlay, (0, 0))
         ##################################################
-        speed = min( 2 , max(2,abs(((self.rect.bottom + SHIP_SIZE) - (HEIGHT - 20))) * 0.2))
+        speed = min(2, max(2, abs(((self.rect.bottom + SHIP_SIZE) - (HEIGHT - 20))) * 0.2))
         self.rect.y -= speed
-        if self.rect.bottom <= -20 and not self.transiton_down :
-            self.transiton_down = True # it means that space shipt move to bottom
-            # put space shipt at bottom of screen
-            self.rect.midbottom = (WIDTH // 2 , HEIGHT + SHIP_SIZE + 50) 
-        if self.rect.bottom >= HEIGHT - 20 and self.transiton_down : ## check to move space ship up
-            self.rect.y -= speed 
-        elif self.transiton_down: ## end of transition when reaches to specif point
-            self.overlay_screen_alpha = 0 
-            self.transiton_down = False
+        if self.rect.bottom <= -20 and not self.transition_down:
+            self.transition_down = True  # it means that space ship move to bottom
+            # put space ship at bottom of screen
+            self.rect.midbottom = (WIDTH // 2, HEIGHT + SHIP_SIZE + 50)
+        if self.rect.bottom >= HEIGHT - 20 and self.transition_down:  # check to move space ship up
+            self.rect.y -= speed
+        elif self.transition_down:  # end of transition when reaches to specif point
+            self.overlay_screen_alpha = 0
+            self.transition_down = False
             self.level_transition = False
     def player_move(self):
         """Moves the player based on mouse position."""
         mouse_pos = pygame.mouse.get_pos()
         pos_diff = [self.rect.centerx - mouse_pos[0], self.rect.centery - mouse_pos[1]]
-        self.rect.x -= pos_diff[0] * 0.16
-        self.rect.y -= pos_diff[1] * 0.16
+        self.rect.x -= pos_diff[0] * 0.1
+        self.rect.y -= pos_diff[1] * 0.1
         self.rect.x = max(20, min(self.rect.x, WIDTH - self.rect.width - 20))
         self.rect.y = max(20, min(self.rect.y, HEIGHT - self.rect.height - 20))
-        # self.rect.right = min(self.rect.right, WIDTH - 10)
-        # self.rect.bottom = min(self.rect.bottom, HEIGHT - 10)
-
+    def player_move1(self):
+        pos_diff = [self.rect.centerx - WIDTH // 2, self.rect.bottom - (HEIGHT - 60)]
+        self.rect.x -= pos_diff[0] * 0.05
+        self.rect.y -= pos_diff[1] * 0.05
+        if abs(pos_diff[1]) <= 10 and abs(pos_diff[0]) <= 10:
+            self.invincible = False
+            return True
+        else:
+            return False
     def take_damage(self):
         """Reduces player health and makes them invincible for a short time."""
         self.health -= 1
-        if self.health <= 0 :
+        if self.health <= 0:
             self.death = True
             self.death_time = pygame.time.get_ticks()
         self.invincible = True
         self.invincible_timer = pygame.time.get_ticks()
         print(f"Player hit! Health: {self.health}")
-
     def check_input(self, bullets_g):
         """Checks for player input (e.g., firing bullets)."""
         current_time = time.time()
@@ -194,10 +207,10 @@ class Player(pygame.sprite.Sprite):
     def check_collisions(self, *sprite_groups):
         """Checks for collisions with various sprite groups."""
         for group in sprite_groups:
-            rect_collide_list = pygame.sprite.spritecollide(self , group, False)
+            rect_collide_list = pygame.sprite.spritecollide(self, group, False)
             if rect_collide_list:
                 for sprite in rect_collide_list:
-                    if pygame.sprite.collide_mask(self , sprite):
+                    if pygame.sprite.collide_mask(self, sprite):
                         if group == lvl_token_group:
                             self.bullet_lvl += 1
                             sprite.kill()
@@ -250,19 +263,22 @@ class Player(pygame.sprite.Sprite):
         elif random_number in range(1, 3):
             lvl_token_group.add(LvlUpToken())
 
-    def update(self , groups):
+    def update(self, groups):
         """Updates the player's state (e.g., movement, collisions)."""
         # if self.death :
         #     self.animation_death()
         #     return
-        if self.level_transition : 
+        if self.level_transition:
             self.player_transition()
             return
         if self.bull_type == "b":
             self.angle = 20
         else:
             self.angle = 0
-        self.player_move()
+        if self.move:
+            self.player_move()
+        else:
+            self.move = self.player_move1()
         self.check_input(bullets_group)
         self.check_collisions(
             lvl_token_group,

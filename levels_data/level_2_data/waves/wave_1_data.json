@@ -1,49 +1,44 @@
 {
-    "waves": [
-      {
-        "final x": 600,
-        "final y": 50,
-        "number of chicken": 5,
-        "number of chicken per row": 5,
-        "type": "red chicken",
-        "initial y": 50,
-        "initial x": 1000,
-        "hidden":"right"
-        
-      },
-      {
-        "final x": 50,
-        "final y": 150,
-        "number of chicken": 5,
-        "number of chicken per row": 5,
-        "type": "green chicken",
-        "initial y": -200,
-        "initial x": 50,
-        "hidden":"up"
-        
-      },
-      {
-          "final x": 50,
-          "final y": 50,
-          "number of chicken": 5,
-          "number of chicken per row": 5,
-          "type": "green chicken",
-          "initial y": 50,
-          "initial x": -300,
-          "hidden":"left"
-          
-        },
-        {
-          "final x": 600,
-          "final y": 150,
-          "number of chicken": 5,
-          "number of chicken per row": 5,
-          "type": "red chicken",
-          "initial y": 600,
-          "initial x": 400,
-          "hidden":"down"
-        
-        }
-    ]
-  }
-  
+  "waves": [
+    {
+      "final x": 600,
+      "final y": 50,
+      "number of chicken": 5,
+      "number of chicken per row": 5,
+      "type": "red chicken",
+      "initial y": -100,
+      "initial x": 600,
+      "hidden": "up"
+    },
+    {
+      "final x": 600,
+      "final y": 50,
+      "number of chicken": 5,
+      "number of chicken per row": 5,
+      "type": "red chicken",
+      "initial y": 700,
+      "initial x": 600,
+      "hidden": "down"
+    },
+    {
+      "final x": 50,
+      "final y": 150,
+      "number of chicken": 5,
+      "number of chicken per row": 5,
+      "type": "green chicken",
+      "initial y": -200,
+      "initial x": 50,
+      "hidden": "up"
+    },
+    {
+      "final x": 50,
+      "final y": 50,
+      "number of chicken": 5,
+      "number of chicken per row": 5,
+      "type": "green chicken",
+      "initial y": 50,
+      "initial x": -300,
+      "hidden": "left"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ from button import *
 from settings_menu import settings_menu
 playing = True
 bg_music = pygame.mixer.Sound("Content/Music/backgroundMap.ogg")
-bg_music.set_volume(0.2)
+bg_music.set_volume(0.5)
 quit_music = pygame.mixer.Sound("Content/Music/Quit.ogg")
 class ContinueGame(ControlButton):
     def __init__(self , x, y, width, height, bg_color, color, text):

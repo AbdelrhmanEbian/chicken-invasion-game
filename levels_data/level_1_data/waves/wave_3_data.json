@@ -7,14 +7,6 @@
         "initial y": 700,
         "initial x": 100,
         "hidden":"bottom"
-      },
-      {
-        "type": "boss",
-        "position_x":100,
-        "position_y":300,
-        "initial y": 700,
-        "initial x": 100,
-        "hidden":"bottom"
       }
     ]
   }

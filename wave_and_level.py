@@ -6,6 +6,7 @@ from button import text_font
 from enemies import ChickenParachute
 import random
 from player import Player
+from sprite_groups import chicken_parachute_group
 class Wave():
     """Represents a wave of enemies."""
     def __init__(self, level, wave):
@@ -76,21 +77,19 @@ class Level:
         self.current_wave = current_wave
         self.level_ended = False
         self.read_level_data()
-        self.chicken_per_wave = self.data["number of chickens in each wave"]
         self.number_of_waves = self.data["number of waves"]
         self.music_played = False
         self.music = self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
         self.change_wave_and_level  = False
         self.is_generate_chicken_parachute = True
-        self.chicken_parachute_group = pygame.sprite.Group()
         self.player = None
-        self.number_of_levels = 2
+        self.number_of_levels = level_number
         self.game_ended = False
-    def generate_chicken_parachute(self):
+    def generate_chicken_parachute(self , rate=180):
         if self.is_generate_chicken_parachute:
-            if not random.randint(0, 180):
+            if not random.randint(0, rate):
                 parachute_chicken = ChickenParachute()
-                self.chicken_parachute_group.add(parachute_chicken)
+                chicken_parachute_group.add(parachute_chicken)
     def generate_wave(self):
         """Generates a wave for the level."""
         wave = Wave(self.current_level, self.current_wave_number)
@@ -141,7 +140,7 @@ class Level:
         self.player = player
     def update(self):
         """Updates the level's state (e.g., wave progression)."""
-        if self.current_wave.wave_ended and len(self.chicken_parachute_group) == 0:
+        if self.current_wave.wave_ended and len(chicken_parachute_group) == 0:
             self.is_generate_chicken_parachute = False
             if not hasattr(self, "wave_end_time"):
                 self.wave_end_time = pygame.time.get_ticks()
@@ -183,5 +182,6 @@ class Level:
                 self.current_wave.draw_level_and_wave()
         else:
             self.is_generate_chicken_parachute = False if self.current_wave.wave_ended else True
-            self.generate_chicken_parachute()
+            if int(settings.difficulty) > 1:
+                self.generate_chicken_parachute(180 * (2 if settings.difficulty == '3' else 1))
             self.current_wave.update()

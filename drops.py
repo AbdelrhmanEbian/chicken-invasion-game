@@ -1,4 +1,3 @@
-import pygame
 from init import *
 import random
 from utils import extract_frames

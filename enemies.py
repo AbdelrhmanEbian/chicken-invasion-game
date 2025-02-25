@@ -1,9 +1,10 @@
-from init import *
 import math
 import random
 from drops import Drops, Meat, Egg
-from utils import  extract_frames
+from init import *
 from sprite_groups import bullets_group, eggs_group, meat_group
+from utils import extract_frames
+
 chicken_die_sounds = list(
     [
         pygame.mixer.Sound(f"Content/Music/chicken/Chicken_death{i}.ogg")
@@ -25,6 +26,8 @@ chicken_bossRed_sheet = pygame.image.load("Content/Enemy/bossRed.png").convert_a
 chicken_bossRed_animation_list = extract_frames(
     chicken_bossRed_sheet, 1, 10, (100, 100)
 )
+
+
 class Enemy(Drops):
     def check_collision(self):
         """Checks for collisions with bullets."""
@@ -35,11 +38,11 @@ class Enemy(Drops):
             if self.health <= 0:
                 self.kill()
                 loop_index = 1
-                chicken_wdith = self.rect.width
-                distance = chicken_wdith
+                chicken_width = self.rect.width
+                distance = chicken_width
                 if isinstance(self, Boss):
                     loop_index = 3
-                    distance = chicken_wdith // 2
+                    distance = chicken_width // 2
                 for i in range(loop_index):
                     pos_x = self.rect.left + (i * distance)
                     pos_y = self.rect.bottom
@@ -53,17 +56,21 @@ class Enemy(Drops):
             else:
                 self.health -= bullet.damage
                 bullet.kill()
+
+
 class Chicken(Enemy):
     """Base class for chicken enemies."""
+
     def __init__(self, image, animation_list=None, x=None, y=None):
         super().__init__(image=image, animation_list=animation_list)
         self.rect = self.image.get_rect(center=(x, y))
-        self.health = 5
+        self.health = 5 * (1 + 0.5*(int(settings.difficulty) - 1))
+
     def animate(self):
         """Animates the chicken."""
         if (
-            math.ceil(self.frame_index) >= self.frames_count
-            or math.floor(self.frame_index) < 0
+                math.ceil(self.frame_index) >= self.frames_count
+                or math.floor(self.frame_index) < 0
         ):
             self.frame_speed *= -1
         self.frame_index += self.frame_speed
@@ -79,6 +86,7 @@ class Chicken(Enemy):
 
 class ChickenParachute(Enemy):
     """Chicken enemy with a parachute."""
+
     def __init__(self):
         self.type = random.choice(["parachuted_red", "parachuted_blue"])
         image = None
@@ -88,7 +96,8 @@ class ChickenParachute(Enemy):
             image = parachute_blue
         super().__init__(image=image)
         self.gravity = 1
-        self.health = 5
+        self.health = 5 * (1 + 0.5*(int(settings.difficulty) - 1))
+
     def update(self):
         """Updates the parachute chicken's state (e.g., collisions, egg drops)."""
         self.drops()
@@ -96,43 +105,48 @@ class ChickenParachute(Enemy):
         if random.randint(0, 200) == 155:
             pos = self.rect.midbottom
             eggs_group.add(Egg(pos))
+
+
 class Boss(Enemy):
     """Boss enemy class."""
-    def __init__(self, type, x, y , hidden , initial_x , initial_y):
+
+    def __init__(self, type, x, y, hidden, initial_x, initial_y):
         self.type = type
         self.is_move_randomly = False
         if self.type == "boss":
             super().__init__(animation_list=chicken_boss_animation_list)
-            self.health = 20
+            self.health = 20 * (1 + 0.5*(int(settings.difficulty) - 1))
         elif self.type == "boss_red":
             super().__init__(animation_list=chicken_bossRed_animation_list)
-            self.health = 15
+            self.health = 15 * (1 + 0.5*(int(settings.difficulty) - 1))
         self.rect = self.image.get_rect(midbottom=(initial_x, initial_y))
         self.last_move_time = pygame.time.get_ticks()
         self.move_interval = 3000
         self.ability_to_move = False
         self.chicken_group = pygame.sprite.GroupSingle(self)
-        self.distination_x = 0
-        self.distination_y = 0
+        self.destination_x = 0
+        self.destination_y = 0
         self.speed_x = 0
         self.speed_y = 0
         self.frame_speed = 0.2
         self.hidden = hidden
         self.x = x
         self.y = y
+
     def check_ability_to_move(self):
         current_time = pygame.time.get_ticks()
-        if (self.last_move_time + self.move_interval <= current_time and not self.is_move_randomly):
+        if self.last_move_time + self.move_interval <= current_time and not self.is_move_randomly:
             self.is_move_randomly = True
-            self.distination_x = random.randint(30, WIDTH - 30)
-            self.distination_y = random.randint(30, HEIGHT - 30)
+            self.destination_x = random.randint(30, WIDTH - 30)
+            self.destination_y = random.randint(30, HEIGHT - 30)
+
     def update(self):
         """Updates the boss's state (e.g., collisions, movement, attacks)."""
         if self.hidden == "right" and self.rect.center[0] > self.x and not self.ability_to_move:
             self.rect.x -= 2
         elif self.hidden == "left" and self.rect.center[0] < self.x and not self.ability_to_move:
             self.rect.x += 2
-        elif self.hidden == "down" and  self.rect.center[1] > self.y and not self.ability_to_move:
+        elif self.hidden == "down" and self.rect.center[1] > self.y and not self.ability_to_move:
             self.rect.y -= 2
         elif self.hidden == "up" and self.rect.center[1] < self.y and not self.ability_to_move:
             self.rect.y += 2
@@ -145,17 +159,17 @@ class Boss(Enemy):
             self.move_randomly()
         if self.type == "boss_red":
             if (
-                math.ceil(self.frame_index) >= self.frames_count
-                or math.floor(self.frame_index) < 0
-                ):
+                    math.ceil(self.frame_index) >= self.frames_count
+                    or math.floor(self.frame_index) < 0
+            ):
                 self.frame_speed *= -1
         self.animate()
         self.attack()
 
     def move_randomly(self):
         """Moves the boss randomly."""
-        speed_x = (self.rect.centerx - self.distination_x) * 0.03
-        speed_y = (self.rect.centery - self.distination_y) * 0.03
+        speed_x = (self.rect.centerx - self.destination_x) * 0.03
+        speed_y = (self.rect.centery - self.destination_y) * 0.03
         self.rect.centerx -= speed_x
         self.rect.centery -= speed_y
         if self.speed_x == speed_x and self.speed_y == speed_y:
