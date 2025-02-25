@@ -52,7 +52,7 @@ class Wave():
     def draw_level_and_wave(self):
         """Displays a message when a wave is completed."""
         text = text_font.render(
-            f"you have finished level {self.current_level} wave {self.current_wave_number}",
+            f"you have finished level {self.current_level}",
             True,
             (255, 255, 255),
         )
@@ -79,6 +79,7 @@ class Level:
         self.chicken_per_wave = self.data["number of chickens in each wave"]
         self.number_of_waves = self.data["number of waves"]
         self.music_played = False
+        self.music = self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
         self.change_wave_and_level  = False
         self.is_generate_chicken_parachute = True
         self.chicken_parachute_group = pygame.sprite.Group()
@@ -144,8 +145,8 @@ class Level:
             self.is_generate_chicken_parachute = False
             if not hasattr(self, "wave_end_time"):
                 self.wave_end_time = pygame.time.get_ticks()
-                self.music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
                 if settings.sound_music :
+                    
                     self.music.play()
                     self.music_played = True
             elapsed_time = pygame.time.get_ticks() - self.wave_end_time
@@ -164,11 +165,12 @@ class Level:
                     self.current_level += 1
                     self.current_wave_number = 1
                     self.level_ended = True
+                    self.player.sprite.level_transition = True
                 else:
                     self.current_wave_number += 1
                 self.save_game()
             self.change_wave_and_level = True
-            if elapsed_time >= 3000:
+            if not self.player.sprite.level_transition :
                 self.music.stop()
                 if self.level_ended:
                     self.read_level_data()

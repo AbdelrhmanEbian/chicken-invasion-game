@@ -26,7 +26,6 @@ def play_fun(
         level = Level(current_level_parameter, current_wave_parameter)
         level.generate_player(bullet_level, bullet_type, score , health)
         overlay_alpha = 0
-        fade_speed = 8  # Speed of fade-in effect
         text_surface = text_font.render("Press 'ESC' to continue", True, (255, 255, 255))
         text_rect = text_surface.get_rect(midbottom=(WIDTH // 2, HEIGHT // 2 - 100))
         back_button = Button(

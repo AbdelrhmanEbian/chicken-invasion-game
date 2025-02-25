@@ -12,4 +12,5 @@ bk_ground = pygame.image.load("Content/background/background.png").convert()
 overlay = pygame.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(100)
 overlay.fill((0, 0, 0))
+fade_speed = 8  # Speed of fade-in effect
 settings = Settings()

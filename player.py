@@ -7,7 +7,7 @@ from sprite_groups import lvl_token_group , bullets_group , eggs_group ,meat_gro
 from enemies import Chicken , ChickenParachute , Boss
 from drops import LvlUpToken , BulletChangeGift
 SHIP_SIZE = 50
-SHIP_POS = [WIDTH // 2, HEIGHT - 20]  # Starting position
+SHIP_POS = (WIDTH // 2, HEIGHT - 20)  # Starting position
 BULLET_COOLDOWN = 0.3  # Cooldown between shots
 bullet_sound = pygame.mixer.Sound("Content/Music/bullet/a.ogg")
 lvl_up_sound = pygame.mixer.Sound("Content/Music/bullet/levelUp.ogg")
@@ -34,7 +34,48 @@ class Player(pygame.sprite.Sprite):
         self.invincible = False
         self.invincible_timer = 0
         self.invincibility_duration = 1000
-
+        self.death = False
+        self.transiton_down = False
+        self.level_transition = False
+        self.death_img =  pygame.transform.smoothscale(pygame.image.load('Content/shipDie.png').convert_alpha() , (SHIP_SIZE , SHIP_SIZE))
+        self.death_time = 0
+        self.death_duration = 3000
+        self.music_death = pygame.mixer.Sound('Content/Music/dead.ogg')
+        self.overlay_screen_alpha = 0
+    def animation_death(self):
+        elapsed_time = pygame.time.get_ticks() - self.death_time
+        scale_factor = 1 + (elapsed_time / 1500)
+        self.death_img = pygame.transform.smoothscale(
+            pygame.image.load('Content/shipDie.png').convert_alpha(),
+            (int(SHIP_SIZE * scale_factor), int(SHIP_SIZE * scale_factor)))
+        self.image = self.death_img
+        self.rect = self.image.get_rect(center=self.rect.center)  
+        if settings.sound_music:
+            self.music_death.play()
+        if elapsed_time >= self.death_duration:
+            settings.is_winner = False
+            settings.is_game_pause = True
+            settings.game_finished = True
+    def player_transition(self): ## add here cool down 
+        # add overlay
+        if self.overlay_screen_alpha < 180:
+            self.overlay_screen_alpha += fade_speed
+            self.overlay_screen_alpha = min(self.overlay_screen_alpha, 180)  # Set to 180 at max
+        overlay.set_alpha(self.overlay_screen_alpha)
+        screen.blit(overlay, (0, 0))
+        ##################################################
+        speed = min( 2 , max(2,abs(((self.rect.bottom + SHIP_SIZE) - (HEIGHT - 20))) * 0.2))
+        self.rect.y -= speed
+        if self.rect.bottom <= -20 and not self.transiton_down :
+            self.transiton_down = True # it means that space shipt move to bottom
+            # put space shipt at bottom of screen
+            self.rect.midbottom = (WIDTH // 2 , HEIGHT + SHIP_SIZE + 50) 
+        if self.rect.bottom >= HEIGHT - 20 and self.transiton_down : ## check to move space ship up
+            self.rect.y -= speed 
+        elif self.transiton_down: ## end of transition when reaches to specif point
+            self.overlay_screen_alpha = 0 
+            self.transiton_down = False
+            self.level_transition = False
     def player_move(self):
         """Moves the player based on mouse position."""
         mouse_pos = pygame.mouse.get_pos()
@@ -49,6 +90,9 @@ class Player(pygame.sprite.Sprite):
     def take_damage(self):
         """Reduces player health and makes them invincible for a short time."""
         self.health -= 1
+        if self.health <= 0 :
+            self.death = True
+            self.death_time = pygame.time.get_ticks()
         self.invincible = True
         self.invincible_timer = pygame.time.get_ticks()
         print(f"Player hit! Health: {self.health}")
@@ -208,6 +252,12 @@ class Player(pygame.sprite.Sprite):
 
     def update(self , groups):
         """Updates the player's state (e.g., movement, collisions)."""
+        # if self.death :
+        #     self.animation_death()
+        #     return
+        if self.level_transition : 
+            self.player_transition()
+            return
         if self.bull_type == "b":
             self.angle = 20
         else:
