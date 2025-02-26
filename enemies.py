@@ -1,5 +1,6 @@
 import math
 import random
+
 from drops import Drops, Meat, Egg
 from init import *
 from sprite_groups import bullets_group, eggs_group, meat_group
@@ -12,6 +13,8 @@ chicken_die_sounds = list(
     ]
 )
 
+laser_sound = pygame.mixer.Sound(
+    "Content/Music/bullet/laser-shot-ingame-230500.mp3")
 parachute_red = pygame.image.load(
     "Content/Enemy/chickenParachuteRed.png"
 ).convert_alpha()
@@ -64,7 +67,7 @@ class Chicken(Enemy):
     def __init__(self, image, animation_list=None, x=None, y=None):
         super().__init__(image=image, animation_list=animation_list)
         self.rect = self.image.get_rect(center=(x, y))
-        self.health = 5 * (1 + 0.5*(int(settings.difficulty) - 1))
+        self.health = 5 * (1 + 0.5 * (int(settings.difficulty) - 1))
 
     def animate(self):
         """Animates the chicken."""
@@ -96,7 +99,7 @@ class ChickenParachute(Enemy):
             image = parachute_blue
         super().__init__(image=image)
         self.gravity = 1
-        self.health = 5 * (1 + 0.5*(int(settings.difficulty) - 1))
+        self.health = 5 * (1 + 0.5 * (int(settings.difficulty) - 1))
 
     def update(self):
         """Updates the parachute chicken's state (e.g., collisions, egg drops)."""
@@ -115,10 +118,10 @@ class Boss(Enemy):
         self.is_move_randomly = False
         if self.type == "boss":
             super().__init__(animation_list=chicken_boss_animation_list)
-            self.health = 20 * (1 + 0.5*(int(settings.difficulty) - 1))
+            self.health = 200 * (1 + 0.5 * (int(settings.difficulty) - 1))
         elif self.type == "boss_red":
             super().__init__(animation_list=chicken_bossRed_animation_list)
-            self.health = 15 * (1 + 0.5*(int(settings.difficulty) - 1))
+            self.health = 150 * (1 + 0.5 * (int(settings.difficulty) - 1))
         self.rect = self.image.get_rect(midbottom=(initial_x, initial_y))
         self.last_move_time = pygame.time.get_ticks()
         self.move_interval = 3000
@@ -142,15 +145,17 @@ class Boss(Enemy):
 
     def update(self):
         """Updates the boss's state (e.g., collisions, movement, attacks)."""
-        if self.hidden == "right" and self.rect.center[0] > self.x and not self.ability_to_move:
-            self.rect.x -= 2
-        elif self.hidden == "left" and self.rect.center[0] < self.x and not self.ability_to_move:
-            self.rect.x += 2
-        elif self.hidden == "down" and self.rect.center[1] > self.y and not self.ability_to_move:
-            self.rect.y -= 2
-        elif self.hidden == "up" and self.rect.center[1] < self.y and not self.ability_to_move:
-            self.rect.y += 2
+        if self.hidden == "right" and self.rect.centerx > self.x and not self.ability_to_move:
+            self.rect.x -= 1
+        elif self.hidden == "left" and self.rect.centerx < self.x and not self.ability_to_move:
+            self.rect.x += 1
+        elif self.hidden == "down" and self.rect.bottom > self.y and not self.ability_to_move:
+            self.rect.y -= 1
+        elif self.hidden == "up" and self.rect.bottom < self.y and not self.ability_to_move:
+            self.rect.y += 1
         else:
+            if not self.ability_to_move:
+                self.last_move_time = pygame.time.get_ticks()
             self.ability_to_move = True
         self.check_collision()
         if self.ability_to_move:
@@ -180,10 +185,56 @@ class Boss(Enemy):
 
     def attack(self):
         """Spawns eggs as an attack."""
-        distance = self.rect.width // 2
-        if random.randint(0, 100) == 99:
-            for i in range(3):
-                pos_x = self.rect.left + (i * distance) + 5
-                pos_y = self.rect.bottom
-                egg = Egg((pos_x, pos_y))
-                eggs_group.add(egg)
+        if HEIGHT - 20 > self.rect.bottom > 0:
+            if self.type == "boss_red":
+                distance = self.rect.width // 2
+                if random.randint(0, 100) == 99:
+                    for i in range(3):
+                        pos_x = self.rect.left + (i * distance) + 5
+                        pos_y = self.rect.bottom
+                        egg = Egg((pos_x, pos_y))
+                        eggs_group.add(egg)
+            else:  # Laser attack for the ufo boss
+                current_time = pygame.time.get_ticks()
+
+                if not hasattr(self, 'last_attack_time'):
+                    self.last_attack_time = current_time  # Initialize attack timer
+                    self.attacking = False
+                    self.last_shot_time = 0  # Track last laser shot
+
+                if not self.attacking and current_time - self.last_attack_time >= 1000:  # Cooldown for 1 second
+                    self.attacking = True
+                    self.last_attack_time = current_time  # Reset timer
+
+                if self.attacking and current_time - self.last_attack_time < 1000:  # Attack for 1 second
+                    if current_time - self.last_shot_time >= 300:  # Fire every 300ms
+                        self.last_shot_time = current_time  # Reset shot timer
+                        if settings.sound_effects:
+                            laser_sound.play()
+                        laser = Laser(self, offset=0, angle=0)  # Shoots straight down
+                        eggs_group.add(laser)
+                        laser = Laser(self, offset=20, angle=30)  # Shoots straight down
+                        eggs_group.add(laser)
+                        laser = Laser(self, offset=-20, angle=-30)  # Shoots straight down
+                        eggs_group.add(laser)
+
+                if current_time - self.last_attack_time >= 1000:  # Stop attacking after 1 second
+                    self.attacking = False
+                    self.last_attack_time = current_time  # Reset cooldown timer
+
+
+class Laser(pygame.sprite.Sprite):
+    def __init__(self, boss: Boss, offset=0.0, angle=0.0, push_back=0.0) -> None:
+        super().__init__()
+        self.image = pygame.image.load(f"Content/bullet/laser_ball.png").convert_alpha()
+        self.angle = angle
+        self.image = pygame.transform.rotate(self.image, -self.angle)
+        self.rect = self.image.get_rect(midbottom=(boss.rect.centerx + offset, boss.rect.bottom + push_back))
+        self.speed = 8
+        self.broken = False
+
+    def update(self):  # moves and dies
+        self.rect.x += self.speed * math.sin(math.radians(self.angle))
+        self.rect.y += self.speed * math.cos(math.radians(self.angle))
+        if self.rect.top > HEIGHT:  # Remove if off-screen
+            self.kill()

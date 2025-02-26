@@ -39,6 +39,14 @@
         "initial y": 125,
         "initial x": -1000,
         "hidden":"left"
+      },
+      {
+      "type": "boss",
+      "final x":600,
+      "final y":200,
+      "initial y": -200,
+      "initial x": 600,
+      "hidden":"up"
       }
     ]
   }

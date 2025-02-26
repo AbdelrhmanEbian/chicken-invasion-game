@@ -1,14 +1,24 @@
 {
     "waves": [
       {
-        "final x": 600,
+        "final x": 50,
         "final y": 50,
-        "number of chicken": 5,
-        "number of chicken per row": 5,
+        "number of chicken": 14,
+        "number of chicken per row": 14,
         "type": "red chicken",
         "initial y": 50,
         "initial x": 1000,
         "hidden":"right"
+      },
+      {
+        "final x": 80,
+        "final y": 75,
+        "number of chicken": 13,
+        "number of chicken per row": 13,
+        "type": "red chicken",
+        "initial y": 75,
+        "initial x": -1000,
+        "hidden":"left"
       }
     ]
   }

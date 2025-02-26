@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.damage = 1
         self.mask = pygame.mask.from_surface(self.image)  # Creates a mask for precise collisions
         self.health = health
-        self.lvl_token_count = 0
+        self.lvl_token_count = score // 100
         self.gift_count = 0
         # Invincibility arguments
         self.invincible = True
@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
         self.transition_down = False
         self.level_transition = False
         self.death_img = pygame.transform.smoothscale(pygame.image.load('Content/shipDie.png').convert_alpha(),
-        (SHIP_SIZE, SHIP_SIZE))
+                                                      (SHIP_SIZE, SHIP_SIZE))
         self.death_time = 0
         self.death_duration = 3000
         self.music_death = pygame.mixer.Sound('Content/Music/dead.ogg')
@@ -84,6 +84,7 @@ class Player(pygame.sprite.Sprite):
             self.overlay_screen_alpha = 0
             self.transition_down = False
             self.level_transition = False
+
     def player_move(self):
         """Moves the player based on mouse position."""
         mouse_pos = pygame.mouse.get_pos()
@@ -92,6 +93,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y -= pos_diff[1] * 0.1
         self.rect.x = max(20, min(self.rect.x, WIDTH - self.rect.width - 20))
         self.rect.y = max(20, min(self.rect.y, HEIGHT - self.rect.height - 20))
+
     def player_move1(self):
         pos_diff = [self.rect.centerx - WIDTH // 2, self.rect.bottom - (HEIGHT - 60)]
         self.rect.x -= pos_diff[0] * 0.05
@@ -101,6 +103,7 @@ class Player(pygame.sprite.Sprite):
             return True
         else:
             return False
+
     def take_damage(self):
         """Reduces player health and makes them invincible for a short time."""
         self.health -= 1
@@ -110,6 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.invincible = True
         self.invincible_timer = pygame.time.get_ticks()
         print(f"Player hit! Health: {self.health}")
+
     def check_input(self, bullets_g):
         """Checks for player input (e.g., firing bullets)."""
         current_time = time.time()
@@ -265,7 +269,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, groups):
         """Updates the player's state (e.g., movement, collisions)."""
-        # if self.death :
+        # if self.death:
         #     self.animation_death()
         #     return
         if self.level_transition:

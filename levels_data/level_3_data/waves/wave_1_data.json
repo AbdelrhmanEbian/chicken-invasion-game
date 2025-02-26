@@ -1,0 +1,12 @@
+{
+  "waves": [
+    {
+      "type": "boss",
+      "final x":600,
+      "final y":0,
+      "initial y": -200,
+      "initial x": 600,
+      "hidden":"up"
+    }
+  ]
+}

@@ -1,7 +1,11 @@
 import json
+
 from button import *
+
+
 class OnOffButton(Button):
     """Toggle button for sound/music settings"""
+
     def __init__(self, x, y, width, height, color, text, key):
         self.key = key
         self.value = settings_dic[self.key]
@@ -19,7 +23,7 @@ class OnOffButton(Button):
         self.image.blit(text_surface, text_rect)
 
     def toggle(self):
-        ControlButton.control_buttons[0].is_changed  = True
+        ControlButton.control_buttons[0].is_changed = True
         self.value = not self.value
         settings_dic[self.key] = self.value
         self.render_text()
@@ -28,11 +32,13 @@ class OnOffButton(Button):
 class DifficultyButton(Button):
     """Button to set game difficulty"""
     all_difficulty_buttons = []
+
     def __init__(self, x, y, width, height, color, text, key, level):
         self.key = key
         self.level = level
         super().__init__(x, y, width, height, (50, 50, 50, 200), color, text)
         DifficultyButton.all_difficulty_buttons.append(self)
+
     def render_text(self):
         self.image.fill((0, 0, 0, 0))
         bg_color = (20, 20, 20, 200) if self.hover and not int(
@@ -42,19 +48,25 @@ class DifficultyButton(Button):
         text_surface = self.font.render(self.text, True, self.color)
         text_rect = text_surface.get_rect(center=(self.width // 2, self.height // 2))
         self.image.blit(text_surface, text_rect)
+
     def select(self):
-        ControlButton.control_buttons[0].is_changed  = True
+        ControlButton.control_buttons[0].is_changed = True
         settings_dic[self.key] = str(self.level)
         for button in DifficultyButton.all_difficulty_buttons:
             button.render_text()
+
+
 class SaveButton(ControlButton):
     """Button to save settings to file"""
+
     @staticmethod
     def control():
         with open("settings.json", "w") as file:
             ControlButton.control_buttons[0].is_changed = False
             json.dump(settings_dic, file)
         settings.read_settings()
+
+
 class BackButton(Button):
     pass
 
@@ -62,7 +74,7 @@ class BackButton(Button):
 def settings_menu(screen, bg_image, bg_music):
     global settings_dic
     settings_dic = settings.__dict__.copy()
-    del settings_dic['is_game_pause'] , settings_dic['game_finished'] , settings_dic['is_winner']
+    del settings_dic['is_game_pause'], settings_dic['game_finished'], settings_dic['is_winner']
     """Displays the settings menu using the shared screen and resources."""
     easy = DifficultyButton(510, 300, 120, 50, (255, 255, 255), "Easy", "difficulty", 1)
     normal = DifficultyButton(660, 300, 120, 50, (255, 255, 255), "Normal", "difficulty", 2)
@@ -99,7 +111,7 @@ def settings_menu(screen, bg_image, bg_music):
                                 bg_music.stop()
                         elif isinstance(button, BackButton):
                             ControlButton.control_buttons[0] = None
-                            return # return to main menu
+                            return  # return to main menu
 
         screen.blit(bg_image, (0, 0))
         screen.blit(overlay, (0, 0))
@@ -111,6 +123,8 @@ def settings_menu(screen, bg_image, bg_music):
         buttons.update()
         buttons.draw(screen)
         pygame.display.update()
+
+
 if __name__ == "__main__":
     WIDTH, HEIGHT = 910, 558
     screen = pygame.display.set_mode((WIDTH, HEIGHT))

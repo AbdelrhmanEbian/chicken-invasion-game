@@ -79,6 +79,30 @@
         "initial y": 675,
         "initial x": 500,
         "hidden":"down"
+      },
+      {
+      "type": "boss",
+      "final x":600,
+      "final y":0,
+      "initial y": -200,
+      "initial x": 600,
+      "hidden":"up"
+      },
+      {
+      "type": "boss_red",
+      "final x":600,
+      "final y":0,
+      "initial y": -200,
+      "initial x": 600,
+      "hidden":"up"
+      },
+      {
+      "type": "boss_red",
+      "final x":600,
+      "final y":0,
+      "initial y": -200,
+      "initial x": 600,
+      "hidden":"up"
       }
   ]
 }

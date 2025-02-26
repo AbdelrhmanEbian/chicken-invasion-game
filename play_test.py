@@ -1,11 +1,14 @@
 from button import *
 from sprite_groups import (bullets_group, gifts_group, eggs_group, lvl_token_group, meat_group , chicken_parachute_group)
 from wave_and_level import Level
+
 # Load assets
 health_icon = pygame.image.load("Content/background/heart.png").convert_alpha()
 health_icon_scaled = pygame.transform.scale_by(health_icon, 0.1)
 winner_music = pygame.mixer.Sound("Content/Music/Gamewin.ogg")
 game_over_music = pygame.mixer.Sound("Content/Music/Gameover.ogg")
+
+
 # Groups for game objects
 def play_fun(current_level_parameter=1, current_wave_parameter=1, bullet_level=1, bullet_type="a", score=0, health=3):
     """Main game loop."""
@@ -41,6 +44,7 @@ def play_fun(current_level_parameter=1, current_wave_parameter=1, bullet_level=1
                     eggs_group.empty()
                     lvl_token_group.empty()
                     meat_group.empty()
+                    chicken_parachute_group.empty()
                     pygame.mixer.stop()
                     return settings.continue_game  # Return to main menu
         # Screen
@@ -112,5 +116,7 @@ def play_fun(current_level_parameter=1, current_wave_parameter=1, bullet_level=1
             button_group.draw(screen)
         clock.tick(fps)
         pygame.display.update()
+
+
 if __name__ == "__main__":
     play_fun()

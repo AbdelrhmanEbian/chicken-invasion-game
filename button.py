@@ -1,5 +1,8 @@
 from init import *
+
 text_font = pygame.font.SysFont('comicsans', 30, bold=True)
+
+
 class Button(pygame.sprite.Sprite):
     def __init__(self, x: float, y: float, width: float, height: float, bg_color, color, text: str) -> None:
         super().__init__()

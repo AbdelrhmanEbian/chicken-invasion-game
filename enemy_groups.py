@@ -1,13 +1,16 @@
-import pygame
-from init import *
-from enemies import Chicken,Boss
-import random
 import math
+import random
+
+from enemies import Chicken, Boss
+from init import *
 from utils import extract_frames
+
 chicken_green_sheet = pygame.image.load("Content/Enemy/chickenGreen.png").convert_alpha()
 chicken_red_sheet = pygame.image.load("Content/Enemy/chickenRed.png").convert_alpha()
 chicken_green_animation_list = extract_frames(chicken_green_sheet, 1, 10)
 chicken_red_animation_list = extract_frames(chicken_red_sheet, 1, 10)
+
+
 class ChickenGroup:  # check
     def __init__(
             self,
@@ -43,13 +46,25 @@ class ChickenGroup:  # check
         self.angle = random.uniform(0, 2 * math.pi)
         self.killed_chicken = 0
         self.generate_chicken_group()
+
     def generate_chicken_group(self):
-        if self.type in ['red chicken' , 'green chicken']:
+        if self.type in ['red chicken', 'green chicken']:
             relative_height = self.initial_y
             chicken_order_in_row = 0
+            no_of_rows = 1
             for _ in range(self.number_of_chickens):
-                if chicken_order_in_row == self.chicken_per_row + 1:
-                    chicken_order_in_row = 1
+                # if you want it staggered
+                # if (chicken_order_in_row == self.chicken_per_row and no_of_rows % 2) or (
+                #         chicken_order_in_row == self.chicken_per_row - 1 and not no_of_rows % 2):
+                #     chicken_order_in_row = 0
+                #     no_of_rows += 1
+                #     relative_height += (chicken.image.get_height() / 2) + 10
+                #
+                # shift = 0 if no_of_rows % 2 else 30
+                # relative_distance = self.initial_x + (chicken_order_in_row * 60) + shift
+                if chicken_order_in_row == self.chicken_per_row:
+                    chicken_order_in_row = 0
+                    no_of_rows += 1
                     relative_height += (chicken.image.get_height() / 2) + 10
                 relative_distance = self.initial_x + (chicken_order_in_row * 60)
                 chicken = Chicken(
@@ -60,17 +75,23 @@ class ChickenGroup:  # check
                 )
                 self.chicken_group.add(chicken)
                 chicken_order_in_row += 1
-        else :
-            self.chicken_group.add(Boss(type=self.type, x=self.x, y=self.y , hidden=self.hidden, initial_x=self.initial_x, initial_y=self.initial_y))
+        else:
+            self.chicken_group.add(
+                Boss(type=self.type, x=self.x, y=self.y, hidden=self.hidden, initial_x=self.initial_x,
+                     initial_y=self.initial_y))
+
     def move_randomly(self):
         move_in_x = self.speed * math.cos(self.angle)
         move_in_y = self.speed * math.sin(self.angle)
+
         distance_in_x = move_in_x * self.move_interval / 1000
         distance_in_y = move_in_y * self.move_interval / 1000
+
         left = min(chicken.rect.left for chicken in self.chicken_group)
         right = max(chicken.rect.right for chicken in self.chicken_group)
         top = min(chicken.rect.top for chicken in self.chicken_group)
         bottom = max(chicken.rect.bottom for chicken in self.chicken_group)
+
         if left + distance_in_x < 0 or right + distance_in_x > WIDTH:
             self.angle = math.pi - self.angle  # Reverse X direction
             move_in_x = self.speed * math.cos(self.angle)
@@ -79,6 +100,8 @@ class ChickenGroup:  # check
             self.angle = -self.angle  # Reverse Y direction
             move_in_y = self.speed * math.sin(self.angle)
             self.last_move_time = pygame.time.get_ticks()
+
+        # Move all chickens in the group
         for chicken in self.chicken_group:
             if isinstance(chicken, Boss):  # Skip Boss chickens
                 continue
@@ -87,9 +110,11 @@ class ChickenGroup:  # check
 
             chicken.rect.x = max(0, min(chicken.rect.x, WIDTH - chicken.rect.width))
             chicken.rect.y = max(0, min(chicken.rect.y, HEIGHT - chicken.rect.height))
+
     def change_angle(self):
         self.angle = random.uniform(0, 2 * math.pi)
-    def update(self , groups):  # (move) for moving randomly or not
+
+    def update(self, groups):  # (move) for moving randomly or not
         if len(self.chicken_group) == 0:
             groups.remove(self)
             del self
